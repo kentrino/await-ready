@@ -1,5 +1,6 @@
-import { Socket } from "node:net";
 import { debug } from "node:util";
+
+import type { PingParams } from ".";
 
 import { ConnectionStatus } from "../ConnectionStatus";
 import { err, ok, type Result } from "../result/Result";
@@ -30,10 +31,7 @@ const SSL_RESPONSE_NOT_SUPPORTED = 0x4e; // 'N'
 /** Valid SSLRequest responses indicating a live PostgreSQL server. */
 const VALID_SSL_RESPONSES = new Set([SSL_RESPONSE_SUPPORTED, SSL_RESPONSE_NOT_SUPPORTED]);
 
-export function ping(
-  socket: Socket,
-  { timeout = 10000 }: { timeout?: number } = {},
-): Promise<Result<undefined, ConnectionStatus>> {
+export function pg({ timeout, socket }: PingParams): Promise<Result<undefined, ConnectionStatus>> {
   const log = debug("await-ready:ping:pg");
   return new Promise<Result<undefined, ConnectionStatus>>((resolve, _) => {
     let timer: NodeJS.Timeout | undefined = undefined;

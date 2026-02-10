@@ -15,6 +15,7 @@ export const errorMessages = {
   VALIDATION_FAILED: "Validation failed",
   UNKNOWN: "Unknown error",
   HOST_NOT_FOUND: "Host not found",
+  PROTOCOL_NOT_SUPPORTED: "Protocol not supported",
 };
 
 export type ErrorCode = keyof typeof errorMessages;
@@ -24,6 +25,7 @@ export const ErrorCodes = {
   VALIDATION_FAILED: "VALIDATION_FAILED",
   UNKNOWN: "UNKNOWN",
   HOST_NOT_FOUND: "HOST_NOT_FOUND",
+  PROTOCOL_NOT_SUPPORTED: "PROTOCOL_NOT_SUPPORTED",
 } satisfies {
   [K in ErrorCode]: `${K}`;
 };

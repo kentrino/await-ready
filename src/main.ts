@@ -8,7 +8,7 @@ import { ConnectionStatus } from "./ConnectionStatus";
 import { createConnection } from "./createConnection";
 import { defineCommand } from "./defineCommand";
 import { poll, type RetryStrategy } from "./poll";
-import { ping } from "./protocols/pg";
+import { ping } from "./protocols";
 import { isErr, ok, type Result } from "./result/Result";
 import { Protocol } from "./types/Protocol";
 
@@ -100,7 +100,10 @@ export const main = defineCommand({
         if (isErr(res)) {
           return res;
         }
-        const _ = await ping(res.value);
+        const _ = await ping(context.args.protocol, {
+          socket: res.value,
+          timeout: context.args.timeout,
+        });
         return ok();
       },
       {
