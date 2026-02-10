@@ -6,6 +6,6 @@ export const ConnectionStatus = {
   HOST_NOT_FOUND: "HOST_NOT_FOUND",
   WAITING_FOR_DNS: "WAITING_FOR_DNS",
   // TODO
-  PROTOCOL_ERROR: "PROTOCOL_ERROR",
+  INVALID_PROTOCOL: "INVALID_PROTOCOL",
 } as const;
 export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];

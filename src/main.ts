@@ -65,10 +65,7 @@ export const main = defineCommand({
           waitForDns: true,
         };
       }
-      if (
-        res.error === ConnectionStatus.SHOULD_RETRY ||
-        res.error === ConnectionStatus.PROTOCOL_ERROR
-      ) {
+      if (res.error === ConnectionStatus.SHOULD_RETRY) {
         return retryContext;
       }
       return undefined;
