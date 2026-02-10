@@ -70,7 +70,7 @@ export function createConnection({
         //  In this case we disable the IPv6 lookup
         log(`Socket cannot be opened for IPv6: ${error.code}`);
         log("Disabling IPv6 lookup");
-        return resolve(err(ConnectionStatus.SWITCH_IP_V4));
+        return resolve(err(ConnectionStatus.SHOULD_SWITCH_IP_V4));
       } else if (error.code === "ENOTFOUND") {
         //  This will occur if the address is not found, i.e. due to a dns
         //  lookup fail (normally a problem if the domain is wrong).

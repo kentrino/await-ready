@@ -70,7 +70,7 @@ export const main = defineCommand({
       waitForDns: boolean;
     };
     const retryStrategy: RetryStrategy<ConnectionStatus, RetryContext> = (res, retryContext) => {
-      if (res.error === ConnectionStatus.SWITCH_IP_V4) {
+      if (res.error === ConnectionStatus.SHOULD_SWITCH_IP_V4) {
         return {
           ...retryContext,
           ipVersion: 6,
@@ -89,27 +89,26 @@ export const main = defineCommand({
     };
 
     const res = await poll(
-      async (): Promise<Result<undefined, ConnectionStatus>> => {
+      async (retryContext): Promise<Result<undefined, ConnectionStatus>> => {
         const res = await createConnection({
           host: context.args.host,
           port: context.args.port,
           timeout: context.args.timeout,
-          ipVersion: 4,
-          waitForDns: false,
+          ...retryContext,
         });
         if (isErr(res)) {
           return res;
         }
-        const _ = await ping(context.args.protocol, {
+        const pingRes = await ping(context.args.protocol, {
           socket: res.value,
           timeout: context.args.timeout,
         });
-        return ok();
+        return pingRes;
       },
       {
         timeout: context.args.timeout,
         initialContext: {
-          ipVersion: 4 as const,
+          ipVersion: 6 as const,
           waitForDns: false,
         },
         interval: context.args.interval,
