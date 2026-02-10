@@ -31,7 +31,10 @@ const SSL_RESPONSE_NOT_SUPPORTED = 0x4e; // 'N'
 /** Valid SSLRequest responses indicating a live PostgreSQL server. */
 const VALID_SSL_RESPONSES = new Set([SSL_RESPONSE_SUPPORTED, SSL_RESPONSE_NOT_SUPPORTED]);
 
-export function pg({ timeout, socket }: PingParams): Promise<Result<undefined, ConnectionStatus>> {
+export function pg({
+  pingTimeout: timeout,
+  socket,
+}: PingParams): Promise<Result<undefined, ConnectionStatus>> {
   const log = debug("await-ready:ping:pg");
   return new Promise<Result<undefined, ConnectionStatus>>((resolve, _) => {
     let timer: NodeJS.Timeout | undefined = undefined;
@@ -39,8 +42,8 @@ export function pg({ timeout, socket }: PingParams): Promise<Result<undefined, C
       timer = setTimeout(() => {
         socket.destroy();
         clearTimeout(timer);
-        log("Timeout");
-        return resolve(err(ConnectionStatus.TIMEOUT));
+        log("No data received in %dms", timeout);
+        return resolve(err(ConnectionStatus.SHOULD_RETRY));
       }, timeout);
     }
     const buf = Buffer.alloc(SSL_REQUEST_LENGTH);

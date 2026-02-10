@@ -9,7 +9,7 @@ import { createConnection } from "./createConnection";
 import { defineCommand } from "./defineCommand";
 import { ExitCode, toExitCode } from "./ExitCode";
 import { poll, type RetryStrategy } from "./poll";
-import { ping } from "./protocols";
+import { DEFAULT_PING_TIMEOUT, ping } from "./protocols";
 import { isErr, type Result } from "./result/Result";
 import { Protocol } from "./types/Protocol";
 
@@ -106,7 +106,7 @@ export const main = defineCommand({
         }
         const pingRes = await ping(context.args.protocol, {
           socket: res.value,
-          timeout: context.args.timeout,
+          pingTimeout: DEFAULT_PING_TIMEOUT,
         });
         return pingRes;
       },

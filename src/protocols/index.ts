@@ -9,8 +9,10 @@ import { pg } from "./pg";
 
 export type PingParams = {
   socket: Socket;
-  timeout: number;
+  pingTimeout: number;
 };
+
+export const DEFAULT_PING_TIMEOUT = 500;
 
 export async function ping(
   protocol: Protocol,
