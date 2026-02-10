@@ -8,6 +8,8 @@ import {
 import consola from "consola";
 import { z } from "zod";
 
+import { ExitCode } from "./ExitCode";
+
 export function defineCommand<Z extends z.ZodType, const T extends ArgsDef = ArgsDef>(
   def: Omit<CommandDef<T>, "run"> & {
     validator: Z;
@@ -20,7 +22,7 @@ export function defineCommand<Z extends z.ZodType, const T extends ArgsDef = Arg
       const parsed = def.validator.safeParse(context.args);
       if (!parsed.success) {
         consola.error(z.prettifyError(parsed.error));
-        process.exit(1);
+        process.exit(ExitCode.VALIDATION_ERROR);
       }
       const zodContext: ZodCommandContext<Z, T> = {
         ...context,

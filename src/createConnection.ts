@@ -1,3 +1,4 @@
+import consola from "consola";
 import { createConnection as createConnectionNode, Socket } from "node:net";
 import { debug } from "node:util";
 
@@ -82,6 +83,7 @@ export function createConnection({
 
         // ...otherwise, we will explicitly fail with a meaningful error for
         //  the user.
+        consola.error("Host not found: %s:%d", host, port);
         return resolve(err(ConnectionStatus.HOST_NOT_FOUND));
       }
     });

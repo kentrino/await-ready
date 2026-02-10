@@ -7,6 +7,7 @@ import * as z from "zod";
 import { ConnectionStatus } from "./ConnectionStatus";
 import { createConnection } from "./createConnection";
 import { defineCommand } from "./defineCommand";
+import { ExitCode, toExitCode } from "./ExitCode";
 import { poll, type RetryStrategy } from "./poll";
 import { ping } from "./protocols";
 import { isErr, type Result } from "./result/Result";
@@ -117,12 +118,11 @@ export const main = defineCommand({
         retryStrategy,
       },
     );
-    if (isErr(res)) {
-      consola.error(res);
-      process.exit(1);
+    if (!res.ok) {
+      process.exit(toExitCode(res.error));
     }
     consola.success(`Service is ready at ${context.args.host}:${context.args.port}`);
-    process.exit(0);
+    process.exit(ExitCode.SUCCESS);
   },
 });
 
