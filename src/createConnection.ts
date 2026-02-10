@@ -21,6 +21,8 @@ export function createConnection({
     const log = debug("await-ready:createConnection");
     let timer: NodeJS.Timeout | undefined = undefined;
 
+    log("Connecting to %s:%d (IPv%d)", host, port, ipVersion);
+
     //  Try and open the socket, with the params and callback.
     const socket = createConnectionNode(
       { host, port, family: ipVersion, autoSelectFamily: true },
@@ -31,6 +33,7 @@ export function createConnection({
     );
 
     socket.on("connect", () => {
+      log("Connected to %s:%d", host, port);
       clearTimeout(timer);
       return resolve(ok(socket));
     });
@@ -40,10 +43,12 @@ export function createConnection({
       clearTimeout(timer);
       socket.destroy();
       if (!("code" in error)) {
+        log("Unknown error: %O", error);
         return resolve(err(ConnectionStatus.UNKNOWN));
       }
       if (error.code === "ECONNREFUSED" || error.code === "EACCES") {
         //  We successfully *tried* to connect, so resolve with false so that we try again.
+        log("Socket not open: %s", error.code);
         return resolve(err(ConnectionStatus.SHOULD_RETRY));
       } else if (error.code === "ECONNTIMEOUT") {
         //  We've successfully *tried* to connect, but we're timing out
@@ -84,6 +89,7 @@ export function createConnection({
     //  Kill the socket if we don't open in time.
     timer = setTimeout(() => {
       socket.destroy();
+      log("Connection timeout after %dms", timeout);
       return resolve(err(ConnectionStatus.TIMEOUT));
     }, timeout);
   });

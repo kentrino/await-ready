@@ -1,6 +1,7 @@
 import { runMain } from "citty";
 // oxlint-disable-next-line import/no-named-as-default
 import consola from "consola";
+import { debug } from "node:util";
 import * as z from "zod";
 
 import { ConnectionStatus } from "./ConnectionStatus";
@@ -40,14 +41,30 @@ export const main = defineCommand({
       options: Protocol.options,
       required: true,
     },
+    interval: {
+      type: "string",
+      default: "1000",
+      description: "The interval in milliseconds",
+      required: false,
+    },
   },
   validator: z.object({
     host: z.string(),
     port: z.string().transform(Number),
     timeout: z.string().transform(Number),
     protocol: Protocol,
+    interval: z.string().transform(Number).pipe(z.number().min(10)),
   }),
   run: async (context) => {
+    const log = debug("await-ready:main");
+    log(
+      "Starting with host=%s port=%d timeout=%dms protocol=%s interval=%dms",
+      context.args.host,
+      context.args.port,
+      context.args.timeout,
+      context.args.protocol,
+      context.args.interval,
+    );
     type RetryContext = {
       ipVersion: 4 | 6;
       waitForDns: boolean;
@@ -92,6 +109,7 @@ export const main = defineCommand({
           ipVersion: 4 as const,
           waitForDns: false,
         },
+        interval: context.args.interval,
         retryStrategy,
       },
     );
