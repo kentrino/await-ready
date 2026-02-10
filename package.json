@@ -2,25 +2,32 @@
   "name": "is-ready",
   "version": "0.0.1",
   "description": "Check if a service is ready",
-  "type": "module",
   "bin": {
     "is-ready": "./dist/main.mjs"
   },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
   "main": "./dist/main.mjs",
   "exports": {
     ".": {
       "import": "./dist/main.mjs"
     }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsdown",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt --write .",
+    "fmt:check": "oxfmt --check .",
+    "check": "bun run lint && bun run fmt:check",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "oxfmt": "^0.28.0",
+    "oxlint": "^1.43.0",
     "tsdown": "^0.20.3"
   },
   "peerDependencies": {

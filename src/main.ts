@@ -1,5 +1,5 @@
 export function main() {
-    console.log("Hello via Bun!");
+  console.log("Hello via Bun!");
 }
 
 main();
