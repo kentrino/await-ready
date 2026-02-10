@@ -1,6 +1,6 @@
 {
   "name": "await-ready",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Check if a service is ready",
   "bin": {
     "is-ready": "./dist/main.mjs"
