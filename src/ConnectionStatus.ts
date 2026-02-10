@@ -4,7 +4,6 @@ export const ConnectionStatus = {
   TIMEOUT: "TIMEOUT",
   UNKNOWN: "UNKNOWN",
   HOST_NOT_FOUND: "HOST_NOT_FOUND",
-  WAITING_FOR_DNS: "WAITING_FOR_DNS",
   // TODO
   INVALID_PROTOCOL: "INVALID_PROTOCOL",
 } as const;

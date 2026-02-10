@@ -9,7 +9,7 @@ import { createConnection } from "./createConnection";
 import { defineCommand } from "./defineCommand";
 import { poll, type RetryStrategy } from "./poll";
 import { ping } from "./protocols";
-import { isErr, ok, type Result } from "./result/Result";
+import { isErr, type Result } from "./result/Result";
 import { Protocol } from "./types/Protocol";
 
 export const main = defineCommand({
@@ -47,6 +47,13 @@ export const main = defineCommand({
       description: "The interval in milliseconds",
       required: false,
     },
+    ["wait-for-dns"]: {
+      type: "boolean",
+      default: false,
+      description:
+        "Do not fail on ENOTFOUND, meaning you can wait for DNS record creation. Default is false.",
+      required: false,
+    },
   },
   validator: z.object({
     host: z.string(),
@@ -54,6 +61,7 @@ export const main = defineCommand({
     timeout: z.string().transform(Number),
     protocol: Protocol,
     interval: z.string().transform(Number).pipe(z.number().min(10)),
+    ["wait-for-dns"]: z.boolean(),
   }),
   run: async (context) => {
     const log = debug("await-ready:main");
@@ -67,24 +75,18 @@ export const main = defineCommand({
     );
     type RetryContext = {
       ipVersion: 4 | 6;
-      waitForDns: boolean;
     };
     const retryStrategy: RetryStrategy<ConnectionStatus, RetryContext> = (res, retryContext) => {
       if (res.error === ConnectionStatus.SHOULD_SWITCH_IP_V4) {
         return {
           ...retryContext,
-          ipVersion: 6,
-        };
-      }
-      if (res.error === ConnectionStatus.WAITING_FOR_DNS) {
-        return {
-          ...retryContext,
-          waitForDns: true,
+          ipVersion: 4,
         };
       }
       if (res.error === ConnectionStatus.SHOULD_RETRY) {
         return retryContext;
       }
+      // Stop retry
       return undefined;
     };
 
@@ -94,6 +96,7 @@ export const main = defineCommand({
           host: context.args.host,
           port: context.args.port,
           timeout: context.args.timeout,
+          waitForDns: context.args["wait-for-dns"],
           ...retryContext,
         });
         if (isErr(res)) {
@@ -109,7 +112,6 @@ export const main = defineCommand({
         timeout: context.args.timeout,
         initialContext: {
           ipVersion: 6 as const,
-          waitForDns: false,
         },
         interval: context.args.interval,
         retryStrategy,
