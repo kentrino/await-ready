@@ -4,7 +4,7 @@ import type { ConnectionStatus } from "../ConnectionStatus";
 import type { Protocol } from "../types/Protocol";
 
 import { AwaitReadyError, ErrorCodes } from "../error/AwaitReadyError";
-import { type Result } from "../result/Result";
+import { ok, type Result } from "../result/Result";
 import { pg } from "./pg";
 
 export type PingParams = {
@@ -12,11 +12,13 @@ export type PingParams = {
   timeout: number;
 };
 
-export function ping(
+export async function ping(
   protocol: Protocol,
   params: PingParams,
 ): Promise<Result<undefined, ConnectionStatus>> {
   switch (protocol) {
+    case "none":
+      return ok();
     case "pg":
       return pg(params);
     default:

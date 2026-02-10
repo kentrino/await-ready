@@ -39,8 +39,9 @@ export const main = defineCommand({
     },
     protocol: {
       type: "enum",
+      default: "none",
       options: Protocol.options,
-      required: true,
+      required: false,
     },
     interval: {
       type: "string",
