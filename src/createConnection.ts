@@ -1,3 +1,4 @@
+// oxlint-disable-next-line import/no-named-as-default
 import consola from "consola";
 import { createConnection as createConnectionNode, Socket } from "node:net";
 import { debug } from "node:util";
