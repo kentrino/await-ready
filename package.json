@@ -1,0 +1,29 @@
+{
+  "name": "is-ready",
+  "version": "0.0.1",
+  "description": "Check if a service is ready",
+  "type": "module",
+  "bin": {
+    "is-ready": "./dist/main.mjs"
+  },
+  "main": "./dist/main.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/main.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "tsdown": "^0.20.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
