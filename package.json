@@ -1,5 +1,5 @@
 {
-  "name": "is-ready",
+  "name": "await-ready",
   "version": "0.0.1",
   "description": "Check if a service is ready",
   "bin": {
