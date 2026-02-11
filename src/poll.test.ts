@@ -1,5 +1,5 @@
-import { expect, test, vi } from "vitest";
-import { createServer } from "node:net";
+import { createServer, type Server } from "node:net";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { StatusCode } from "./ConnectionStatus";
 import { createConnection } from "./createConnection";
@@ -7,40 +7,132 @@ import { poll } from "./poll";
 
 vi.mock("./createConnection", { spy: true });
 
-test("falls back to IPv6 when server only listens on ::1", async () => {
-  // Server listening on IPv6 loopback only — not reachable via 127.0.0.1
-  const server = createServer();
-  const port = await new Promise<number>((resolve) => {
-    server.listen(0, "::1", () => {
-      resolve((server.address() as { port: number }).port);
+function listen(host: string): Promise<{ server: Server; port: number }> {
+  return new Promise((resolve) => {
+    const server = createServer();
+    server.listen(0, host, () => {
+      const port = (server.address() as { port: number }).port;
+      resolve({ server, port });
     });
   });
+}
 
-  // poll starts with IPv4 (127.0.0.1 → ECONNREFUSED),
-  // then immediately retries with IPv6 (::1 → success)
-  const result = await poll({
-    host: "localhost",
-    port,
-    timeout: 5000,
-    interval: 100,
-    waitForDns: false,
-    protocol: "none",
+function getFreePort(): Promise<number> {
+  return new Promise((resolve) => {
+    const server = createServer();
+    server.listen(0, () => {
+      const port = (server.address() as { port: number }).port;
+      server.close(() => resolve(port));
+    });
+  });
+}
+
+const defaults = {
+  timeout: 5000,
+  interval: 100,
+  waitForDns: false,
+  protocol: "none" as const,
+};
+
+describe("poll", () => {
+  afterEach(() => {
+    vi.mocked(createConnection).mockClear();
   });
 
-  server.close();
+  test("should connect to IPv4 server with explicit IPv4 host", async () => {
+    const { server, port } = await listen("127.0.0.1");
 
-  expect(result.code).toBe(StatusCode.CONNECTED);
+    const result = await poll({ ...defaults, host: "127.0.0.1", port });
 
-  // Verify IPv4 was tried first, then IPv6
-  expect(createConnection).toHaveBeenCalledWith(
-    expect.objectContaining({ ipVersion: 4 }),
-  );
-  expect(createConnection).toHaveBeenCalledWith(
-    expect.objectContaining({ ipVersion: 6 }),
-  );
+    server.close();
+    expect(result.code).toBe(StatusCode.CONNECTED);
+  });
 
-  const calls = vi.mocked(createConnection).mock.calls;
-  const ipVersions = calls.map((c) => c[0].ipVersion);
-  expect(ipVersions[0]).toBe(4);
-  expect(ipVersions[1]).toBe(6);
+  test("should connect to IPv6 server with explicit IPv6 host", async () => {
+    const { server, port } = await listen("::1");
+
+    const result = await poll({ ...defaults, host: "::1", port });
+
+    server.close();
+    expect(result.code).toBe(StatusCode.CONNECTED);
+  });
+
+  test("should connect to IPv4 server with localhost", async () => {
+    const { server, port } = await listen("127.0.0.1");
+
+    const result = await poll({ ...defaults, host: "localhost", port });
+
+    server.close();
+    expect(result.code).toBe(StatusCode.CONNECTED);
+  });
+
+  test("should fall back to IPv6 when server only listens on ::1 with localhost", async () => {
+    const { server, port } = await listen("::1");
+
+    const result = await poll({ ...defaults, host: "localhost", port });
+
+    server.close();
+    expect(result.code).toBe(StatusCode.CONNECTED);
+
+    // Verify IPv4 was tried first, then fell back to IPv6
+    const calls = vi.mocked(createConnection).mock.calls;
+    const ipVersions = calls.map((c) => c[0].ipVersion);
+    expect(ipVersions[0]).toBe(4);
+    expect(ipVersions[1]).toBe(6);
+  });
+
+  test("should timeout after the specified time", async () => {
+    const port = await getFreePort();
+    const timeout = 500;
+    const delta = 300;
+
+    const start = Date.now();
+    const result = await poll({ ...defaults, host: "127.0.0.1", port, timeout });
+    const elapsed = Date.now() - start;
+
+    expect(result.code).toBe(StatusCode.TIMEOUT);
+    expect(elapsed).toBeGreaterThan(timeout - delta);
+    expect(elapsed).toBeLessThan(timeout + delta);
+  });
+
+  test("should timeout with a non-routable address", async () => {
+    const result = await poll({
+      ...defaults,
+      host: "10.255.255.1",
+      port: 9021,
+      timeout: 200,
+    });
+
+    expect(result.code).toBe(StatusCode.TIMEOUT);
+  });
+
+  test("should return HOST_NOT_FOUND for invalid domain", async () => {
+    const result = await poll({
+      ...defaults,
+      host: "ireallyhopethatthisdomainnamedoesnotexist.com",
+      port: 9021,
+      timeout: 500,
+    });
+
+    expect(result.code).toBe(StatusCode.HOST_NOT_FOUND);
+  });
+
+  test("should not error on ENOTFOUND when wait-for-dns is true, and timeout instead", async () => {
+    const timeout = 300;
+    const delta = 200;
+
+    const start = Date.now();
+    const result = await poll({
+      ...defaults,
+      host: "ireallyhopethatthisdomainnamedoesnotexist.com",
+      port: 9021,
+      timeout,
+      waitForDns: true,
+    });
+    const elapsed = Date.now() - start;
+
+    expect(result.code).toBe(StatusCode.TIMEOUT);
+    expect(elapsed).toBeGreaterThan(timeout - delta);
+    expect(elapsed).toBeLessThan(timeout + delta);
+  });
 });
