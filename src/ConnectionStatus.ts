@@ -114,6 +114,7 @@ export function status<T extends StatusCode>(...args: StatusFnParams<T>): Connec
 
 export function shouldRetry(s: ConnectionStatus): boolean {
   return (
+    s.code === StatusCode.__NO_DATA_RECEIVED ||
     s.code === StatusCode.__SHOULD_USE_IP_V4 ||
     s.code === StatusCode.__ECONNREFUSED ||
     s.code === StatusCode.__EACCES ||
