@@ -80,4 +80,40 @@ describe("parseTarget", () => {
     expect(result!.host).toBe("example.com");
     expect(result!.path).toBe("/status");
   });
+
+  test("should use default port 80 for http when port is omitted", () => {
+    const result = parseTarget("http://example.com");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("http");
+    expect(result!.port).toBe(80);
+    expect(result!.host).toBe("example.com");
+    expect(result!.path).toBeUndefined();
+  });
+
+  test("should use default port 443 for https when port is omitted", () => {
+    const result = parseTarget("https://example.com");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("https");
+    expect(result!.port).toBe(443);
+    expect(result!.host).toBe("example.com");
+    expect(result!.path).toBeUndefined();
+  });
+
+  test("should use default port with path when port is omitted", () => {
+    const result = parseTarget("http://example.com/healthcheck");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("http");
+    expect(result!.port).toBe(80);
+    expect(result!.host).toBe("example.com");
+    expect(result!.path).toBe("/healthcheck");
+  });
+
+  test("should use default port for https with path when port is omitted", () => {
+    const result = parseTarget("https://example.com/status");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("https");
+    expect(result!.port).toBe(443);
+    expect(result!.host).toBe("example.com");
+    expect(result!.path).toBe("/status");
+  });
 });

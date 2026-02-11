@@ -47,11 +47,20 @@ export function parseTarget(target: string): ParsedTarget | undefined {
   const path = pathStart !== -1 ? remaining.substring(pathStart) : undefined;
   remaining = pathStart !== -1 ? remaining.substring(0, pathStart) : remaining;
 
+  //  Default ports for known protocols.
+  const defaultPorts: Record<string, number> = { http: 80, https: 443 };
+
   //  Split into host and port on ':'.
   const parts = remaining.split(":");
   if (parts.length > 2) {
     log("'%s' is an invalid target, too many ':' separators", target);
     return undefined;
+  }
+
+  //  When a protocol was specified and there is no port separator,
+  //  treat the whole remaining string as the host and use the default port.
+  if (protocolMatch && parts.length === 1 && parts[0] && !/^[0-9]+$/.test(parts[0])) {
+    return { protocol, host: parts[0], port: defaultPorts[protocol]!, path };
   }
 
   //  Determine host and port string.
@@ -68,7 +77,7 @@ export function parseTarget(target: string): ParsedTarget | undefined {
   }
   const port = Number.parseInt(portStr, 10);
   if (port < 1 || port > 65535) {
-    log("'%s' is an invalid target, port %d is out of range (1–65535)", target, port);
+    log("'%s' is an invalid target, port %d is out of range (1 - 65535)", target, port);
     return undefined;
   }
 
