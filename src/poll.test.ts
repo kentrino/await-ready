@@ -5,6 +5,10 @@ import { StatusCode } from "./ConnectionStatus";
 import { createConnection } from "./createConnection";
 import { poll } from "./poll";
 
+if (!process.env.VITEST) {
+  throw new Error("This test must be run with vitest (`bun run test`), not `bun test`.");
+}
+
 vi.mock("./createConnection", { spy: true });
 
 function listen(host: string): Promise<{ server: Server; port: number }> {
