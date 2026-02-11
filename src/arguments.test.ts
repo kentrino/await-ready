@@ -78,6 +78,11 @@ describe("Args", () => {
       expect(result.output).toBe("spinner");
     });
 
+    test("should accept --output sl", () => {
+      const result = parse("-p 8080 --output sl");
+      expect(result.output).toBe("sl");
+    });
+
     test("should accept --output silent", () => {
       const result = parse("-p 8080 --output silent");
       expect(result.output).toBe("silent");

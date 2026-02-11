@@ -46,7 +46,7 @@ export const args = {
     type: "enum",
     default: "dots",
     options: OutputMode.options,
-    description: "Output mode: dots (default), spinner, or silent",
+    description: "Output mode: dots (default), spinner, sl, or silent",
     required: false,
   },
   silent: {
