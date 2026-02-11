@@ -50,6 +50,7 @@ export async function poll(params: PollParams): Promise<PollStatus> {
       log("Timeout after %d attempts (%dms)", retryContext.attempt, Date.now() - start);
       return status(StatusCode.TIMEOUT, "Connection timed out");
     }
+    params.onRetry?.(retryContext.attempt, Date.now() - start);
     await delay(retryContext.nextInterval);
   }
 }
@@ -127,4 +128,6 @@ type PollParams = {
   interval: number;
   waitForDns: boolean;
   protocol: Protocol;
+  /** Called after a failed attempt, right before the retry delay. */
+  onRetry?: (attempt: number, elapsedMs: number) => void;
 };

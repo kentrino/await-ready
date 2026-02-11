@@ -1,5 +1,6 @@
 import * as z from "zod";
 
+import { OutputMode } from "./output";
 import { parseTarget } from "./parseTarget";
 import { Protocol } from "./types/Protocol";
 
@@ -41,6 +42,20 @@ export const args = {
     description: "The interval in milliseconds",
     required: false,
   },
+  output: {
+    type: "enum",
+    default: "dots",
+    options: OutputMode.options,
+    description: "Output mode: dots (default), spinner, or silent",
+    required: false,
+  },
+  silent: {
+    type: "boolean",
+    default: false,
+    alias: "s",
+    description: "Suppress all output (shorthand for --output silent)",
+    required: false,
+  },
   ["wait-for-dns"]: {
     type: "boolean",
     default: false,
@@ -57,21 +72,25 @@ const input = z.object({
   timeout: z.string().transform(Number).pipe(z.number().int().min(0)),
   protocol: ProtocolInput,
   interval: z.string().transform(Number).pipe(z.number().min(10)),
+  output: OutputMode,
+  silent: z.boolean(),
   ["wait-for-dns"]: z.boolean(),
 });
 
-const output = z.object({
+const validated = z.object({
   host: z.string(),
   port: z.number().int().min(1).max(65535),
   timeout: z.number().int().min(0),
   protocol: Protocol,
   interval: z.number().min(10),
   path: z.union([z.string(), z.undefined()]),
+  output: OutputMode,
   ["wait-for-dns"]: z.boolean(),
 });
 
 export const Args = input
-  .transform((v, ctx): z.input<typeof output> => {
+  .transform((v, ctx): z.input<typeof validated> => {
+    const output: z.infer<typeof OutputMode> = v.silent ? "silent" : v.output;
     if (v.target) {
       const parsed = parseTarget(v.target);
       if (!parsed) {
@@ -88,6 +107,7 @@ export const Args = input
         path: parsed.path,
         timeout: v.timeout,
         interval: v.interval,
+        output,
         "wait-for-dns": v["wait-for-dns"],
       };
     }
@@ -105,7 +125,8 @@ export const Args = input
       path: undefined,
       timeout: v.timeout,
       interval: v.interval,
+      output,
       "wait-for-dns": v["wait-for-dns"],
     };
   })
-  .pipe(output);
+  .pipe(validated);

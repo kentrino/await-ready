@@ -1,12 +1,11 @@
 import { runMain } from "citty";
-// oxlint-disable-next-line import/no-named-as-default
-import consola from "consola";
 import { debug } from "node:util";
 
 import { args, Args } from "./arguments";
 import { StatusCode } from "./ConnectionStatus";
 import { defineCommand } from "./defineCommand";
 import { ExitCode, toExitCode } from "./ExitCode";
+import { createOutput } from "./output";
 import { poll } from "./poll";
 
 export const main = defineCommand({
@@ -20,13 +19,19 @@ export const main = defineCommand({
   run: async (context) => {
     const log = debug("await-ready:main");
     log(
-      "Starting with host=%s port=%d timeout=%dms protocol=%s interval=%dms",
+      "Starting with host=%s port=%d timeout=%dms protocol=%s interval=%dms output=%s",
       context.args.host,
       context.args.port,
       context.args.timeout,
       context.args.protocol,
       context.args.interval,
+      context.args.output,
     );
+
+    const output = createOutput(context.args.output);
+    output.onStart(context.args.host, context.args.port);
+    const start = Date.now();
+
     const res = await poll({
       host: context.args.host,
       port: context.args.port,
@@ -34,11 +39,18 @@ export const main = defineCommand({
       protocol: context.args.protocol,
       interval: context.args.interval,
       waitForDns: context.args["wait-for-dns"],
+      onRetry: (attempt, elapsedMs) => output.onRetry(attempt, elapsedMs),
     });
+
+    const elapsed = Date.now() - start;
+
     if (res.code !== StatusCode.CONNECTED) {
+      output.onFailure(res.message, elapsed);
+      output.dispose();
       process.exit(toExitCode(res));
     }
-    consola.success(`Service is ready at ${context.args.host}:${context.args.port}`);
+    output.onSuccess(context.args.host, context.args.port, elapsed);
+    output.dispose();
     process.exit(ExitCode.SUCCESS);
   },
 });

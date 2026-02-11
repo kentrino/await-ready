@@ -67,6 +67,31 @@ describe("Args", () => {
       expect(result.interval).toBe(1000);
       expect(result["wait-for-dns"]).toBe(false);
     });
+
+    test("should default output to dots", () => {
+      const result = parse("-p 8080");
+      expect(result.output).toBe("dots");
+    });
+
+    test("should accept --output spinner", () => {
+      const result = parse("-p 8080 --output spinner");
+      expect(result.output).toBe("spinner");
+    });
+
+    test("should accept --output silent", () => {
+      const result = parse("-p 8080 --output silent");
+      expect(result.output).toBe("silent");
+    });
+
+    test("should override output to silent when --silent is set", () => {
+      const result = parse("-p 8080 --output dots --silent");
+      expect(result.output).toBe("silent");
+    });
+
+    test("should set output to silent with -s shorthand", () => {
+      const result = parse("-p 8080 -s");
+      expect(result.output).toBe("silent");
+    });
   });
 
   describe("with-target path (positional)", () => {
