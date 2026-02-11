@@ -54,9 +54,7 @@ export function http({ pingTimeout: timeout, socket, path }: PingParams): Promis
 
       if (!httpVersion.startsWith("HTTP/")) {
         log("Not an HTTP response: %s", statusLine);
-        return resolve(
-          status(StatusCode.INVALID_PROTOCOL, `Not an HTTP response: ${statusLine}`),
-        );
+        return resolve(status(StatusCode.INVALID_PROTOCOL, `Not an HTTP response: ${statusLine}`));
       }
 
       log("HTTP status line: %s (status %s)", statusLine, statusCode);
