@@ -76,7 +76,7 @@ export const Args = input
       const parsed = parseTarget(v.target);
       if (!parsed) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Invalid target: '${v.target}'`,
         });
         return z.NEVER;
@@ -93,7 +93,7 @@ export const Args = input
     }
     if (!v.port) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "A valid port is required. Specify a target or use -p.",
       });
       return z.NEVER;
