@@ -127,10 +127,12 @@ export function createConnection({
     });
 
     //  Kill the socket if we don't open in time.
-    timer = setTimeout(() => {
-      socket.destroy();
-      log("Connection timeout after %dms", timeout);
-      return resolve(status(StatusCode.TIMEOUT, `Connection timeout after ${timeout}ms`));
-    }, timeout);
+    if (timeout > 0) {
+      timer = setTimeout(() => {
+        socket.destroy();
+        log("Connection timeout after %dms", timeout);
+        return resolve(status(StatusCode.TIMEOUT, `Connection timeout after ${timeout}ms`));
+      }, timeout);
+    }
   });
 }

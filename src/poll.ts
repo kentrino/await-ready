@@ -46,7 +46,7 @@ export async function poll(params: PollParams): Promise<PollStatus> {
       }
       return status(StatusCode.UNKNOWN, "Illegal state");
     }
-    if (Date.now() - start > params.timeout) {
+    if (params.timeout > 0 && Date.now() - start > params.timeout) {
       log("Timeout after %d attempts (%dms)", retryContext.attempt, Date.now() - start);
       return status(StatusCode.TIMEOUT, "Connection timed out");
     }

@@ -117,6 +117,33 @@ describe("poll", () => {
     expect(result.code).toBe(StatusCode.HOST_NOT_FOUND);
   });
 
+  test("should not timeout when timeout is 0 (infinite wait)", async () => {
+    const { server, port } = await listen("127.0.0.1");
+
+    const result = await poll({ ...defaults, host: "127.0.0.1", port, timeout: 0 });
+
+    server.close();
+    expect(result.code).toBe(StatusCode.CONNECTED);
+  });
+
+  test("should retry with timeout=0 until server becomes available", async () => {
+    const port = await getFreePort();
+
+    // Start a server after a short delay
+    const serverReady = new Promise<Server>((resolve) => {
+      setTimeout(() => {
+        const s = createServer();
+        s.listen(port, "127.0.0.1", () => resolve(s));
+      }, 300);
+    });
+
+    const result = await poll({ ...defaults, host: "127.0.0.1", port, timeout: 0, interval: 50 });
+
+    expect(result.code).toBe(StatusCode.CONNECTED);
+    const server = await serverReady;
+    server.close();
+  });
+
   test("should not error on ENOTFOUND when wait-for-dns is true, and timeout instead", async () => {
     const timeout = 300;
     const delta = 200;

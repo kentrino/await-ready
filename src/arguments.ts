@@ -25,7 +25,7 @@ export const args = {
   timeout: {
     type: "string",
     default: "10000",
-    description: "The timeout in milliseconds",
+    description: "The timeout in milliseconds (0 for infinite)",
     required: false,
   },
   protocol: {
