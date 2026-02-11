@@ -5,9 +5,10 @@ services:
     ports:
       - "8080:80"
 
-  # --- PostgreSQL ---
+  # --- PostgreSQL (oldest available on Docker Hub) ---
   postgres:
-    image: postgres:17-alpine
+    image: postgres:9.1
+    platform: linux/amd64
     ports:
       - "5432:5432"
     environment:
@@ -15,9 +16,10 @@ services:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
 
-  # --- MySQL ---
+  # --- MySQL (oldest available on Docker Hub) ---
   mysql:
-    image: mysql:8
+    image: mysql:5.5
+    platform: linux/amd64
     ports:
       - "3306:3306"
     environment:
