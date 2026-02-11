@@ -1,6 +1,6 @@
 import { test, expect, describe } from "bun:test";
 
-import { ConnectionStatus } from "./ConnectionStatus";
+import { StatusCode, status } from "./ConnectionStatus";
 import { ExitCode, toExitCode } from "./ExitCode";
 
 describe("ExitCode", () => {
@@ -14,27 +14,29 @@ describe("ExitCode", () => {
 });
 
 describe("toExitCode", () => {
+  test("CONNECTED → exit code 0", () => {
+    expect(toExitCode(status(StatusCode.CONNECTED, "ok"))).toBe(ExitCode.SUCCESS);
+  });
+
   test("TIMEOUT → exit code 1", () => {
-    expect(toExitCode(ConnectionStatus.TIMEOUT)).toBe(ExitCode.TIMEOUT);
+    expect(toExitCode(status(StatusCode.TIMEOUT, "test"))).toBe(ExitCode.TIMEOUT);
   });
 
   test("HOST_NOT_FOUND → exit code 4", () => {
-    expect(toExitCode(ConnectionStatus.HOST_NOT_FOUND)).toBe(ExitCode.CONNECTION_ERROR);
+    expect(toExitCode(status(StatusCode.HOST_NOT_FOUND, "test"))).toBe(ExitCode.CONNECTION_ERROR);
   });
 
   test("UNKNOWN → exit code 3", () => {
-    expect(toExitCode(ConnectionStatus.UNKNOWN)).toBe(ExitCode.UNKNOWN_ERROR);
+    expect(toExitCode(status(StatusCode.UNKNOWN, "test"))).toBe(ExitCode.UNKNOWN_ERROR);
   });
 
   test("INVALID_PROTOCOL → exit code 3", () => {
-    expect(toExitCode(ConnectionStatus.INVALID_PROTOCOL)).toBe(ExitCode.UNKNOWN_ERROR);
+    expect(toExitCode(status(StatusCode.INVALID_PROTOCOL, "test"))).toBe(ExitCode.UNKNOWN_ERROR);
   });
 
-  test("SHOULD_RETRY → exit code 3 (fallback)", () => {
-    expect(toExitCode(ConnectionStatus.SHOULD_RETRY)).toBe(ExitCode.UNKNOWN_ERROR);
-  });
-
-  test("SHOULD_SWITCH_IP_V4 → exit code 3 (fallback)", () => {
-    expect(toExitCode(ConnectionStatus.SHOULD_SWITCH_IP_V4)).toBe(ExitCode.UNKNOWN_ERROR);
+  test("PROTOCOL_NOT_SUPPORTED → exit code 3", () => {
+    expect(toExitCode(status(StatusCode.PROTOCOL_NOT_SUPPORTED, "test"))).toBe(
+      ExitCode.UNKNOWN_ERROR,
+    );
   });
 });

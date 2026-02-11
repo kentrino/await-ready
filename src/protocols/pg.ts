@@ -2,8 +2,7 @@ import { debug } from "node:util";
 
 import type { PingParams } from ".";
 
-import { ConnectionStatus } from "../ConnectionStatus";
-import { err, ok, type Result } from "../result/Result";
+import { StatusCode, status, type PingStatus } from "../ConnectionStatus";
 
 /**
  * PostgreSQL SSLRequest message constants.
@@ -31,19 +30,16 @@ const SSL_RESPONSE_NOT_SUPPORTED = 0x4e; // 'N'
 /** Valid SSLRequest responses indicating a live PostgreSQL server. */
 const VALID_SSL_RESPONSES = new Set([SSL_RESPONSE_SUPPORTED, SSL_RESPONSE_NOT_SUPPORTED]);
 
-export function pg({
-  pingTimeout: timeout,
-  socket,
-}: PingParams): Promise<Result<undefined, ConnectionStatus>> {
+export function pg({ pingTimeout: timeout, socket }: PingParams): Promise<PingStatus> {
   const log = debug("await-ready:ping:pg");
-  return new Promise<Result<undefined, ConnectionStatus>>((resolve, _) => {
+  return new Promise<PingStatus>((resolve, _) => {
     let timer: NodeJS.Timeout | undefined = undefined;
     if (timeout > 0) {
       timer = setTimeout(() => {
         socket.destroy();
         clearTimeout(timer);
         log("No data received in %dms", timeout);
-        return resolve(err(ConnectionStatus.SHOULD_RETRY));
+        return resolve(status(StatusCode.__SHOULD_RETRY, `No data received in ${timeout}ms`));
       }, timeout);
     }
     const buf = Buffer.alloc(SSL_REQUEST_LENGTH);
@@ -57,21 +53,21 @@ export function pg({
       clearTimeout(timer);
       if (data.length === 0) {
         log("Data is empty");
-        return resolve(err(ConnectionStatus.INVALID_PROTOCOL));
+        return resolve(status(StatusCode.INVALID_PROTOCOL, "Data is empty"));
       }
       const response = data[0] as number | undefined;
       if (response === undefined || !VALID_SSL_RESPONSES.has(response)) {
         log("Invalid protocol response");
-        return resolve(err(ConnectionStatus.INVALID_PROTOCOL));
+        return resolve(status(StatusCode.INVALID_PROTOCOL, "Invalid PostgreSQL response"));
       }
 
-      return resolve(ok());
+      return resolve(status(StatusCode.CONNECTED, "PostgreSQL is ready"));
     });
     socket.on("error", (_: Error) => {
       socket.destroy();
       log("Socket error");
       clearTimeout(timer);
-      return resolve(err(ConnectionStatus.SHOULD_RETRY));
+      return resolve(status(StatusCode.__SHOULD_RETRY, "Socket error"));
     });
   });
 }

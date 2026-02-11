@@ -1,4 +1,4 @@
-import { ConnectionStatus } from "./ConnectionStatus";
+import { StatusCode, type PollStatus, type StatusCodeOf } from "./ConnectionStatus";
 
 /**
  * Exit codes for the CLI tool.
@@ -20,15 +20,15 @@ export const ExitCode = {
 } as const;
 export type ExitCode = (typeof ExitCode)[keyof typeof ExitCode];
 
-const connectionStatusToExitCode: Record<ConnectionStatus, ExitCode> = {
-  [ConnectionStatus.TIMEOUT]: ExitCode.TIMEOUT,
-  [ConnectionStatus.HOST_NOT_FOUND]: ExitCode.CONNECTION_ERROR,
-  [ConnectionStatus.UNKNOWN]: ExitCode.UNKNOWN_ERROR,
-  [ConnectionStatus.INVALID_PROTOCOL]: ExitCode.UNKNOWN_ERROR,
-  [ConnectionStatus.SHOULD_RETRY]: ExitCode.UNKNOWN_ERROR,
-  [ConnectionStatus.SHOULD_USE_IP_V4]: ExitCode.UNKNOWN_ERROR,
+const codeToExitCode: Record<StatusCodeOf<PollStatus>, ExitCode> = {
+  [StatusCode.CONNECTED]: ExitCode.SUCCESS,
+  [StatusCode.TIMEOUT]: ExitCode.TIMEOUT,
+  [StatusCode.HOST_NOT_FOUND]: ExitCode.CONNECTION_ERROR,
+  [StatusCode.UNKNOWN]: ExitCode.UNKNOWN_ERROR,
+  [StatusCode.INVALID_PROTOCOL]: ExitCode.UNKNOWN_ERROR,
+  [StatusCode.PROTOCOL_NOT_SUPPORTED]: ExitCode.UNKNOWN_ERROR,
 };
 
-export function toExitCode(status: ConnectionStatus): ExitCode {
-  return connectionStatusToExitCode[status] ?? ExitCode.UNKNOWN_ERROR;
+export function toExitCode(s: PollStatus): ExitCode {
+  return codeToExitCode[s.code];
 }

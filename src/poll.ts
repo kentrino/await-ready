@@ -3,15 +3,22 @@ import { debug } from "node:util";
 
 import type { Protocol } from "./types/Protocol";
 
-import { ConnectionStatus } from "./ConnectionStatus";
+import {
+  StatusCode,
+  isPollStatus,
+  isSocketConnected,
+  shouldRetry,
+  status,
+  type ConnectionStatus,
+  type PollStatus,
+} from "./ConnectionStatus";
 import { createConnection } from "./createConnection";
 import { DEFAULT_PING_TIMEOUT, ping } from "./protocols";
-import { err, isErr, isOk, type Result } from "./result/Result";
 import { delay } from "./util/delay";
 
 const log = debug("await-ready:poll");
 
-export async function poll(params: PollParams): Promise<Result<undefined, ConnectionStatus>> {
+export async function poll(params: PollParams): Promise<PollStatus> {
   let start = Date.now();
   let retryContext: RetryContext = {
     attempt: 1,
@@ -23,22 +30,25 @@ export async function poll(params: PollParams): Promise<Result<undefined, Connec
   while (true) {
     log("Attempt %d (elapsed: %dms)", retryContext.attempt, Date.now() - start);
     const result = await once({ ...params, ipVersion: retryContext.ipVersion });
-    if (isOk(result)) {
+    if (result.code === StatusCode.CONNECTED) {
       log("Success on attempt %d", retryContext.attempt);
       return result;
     }
     retryContext = next({
       ...retryContext,
-      lastStatus: result.error,
+      lastStatus: result,
     });
-    log("Attempt %d failed: %s", retryContext.attempt, result.error);
+    log("Attempt %d failed: %s (%s)", retryContext.attempt, result.code, result.message);
     if (!retryContext.shouldRetry) {
       log("Giving up after %d attempts (%dms)", retryContext.attempt, Date.now() - start);
-      return result;
+      if (isPollStatus(result)) {
+        return result;
+      }
+      return status(StatusCode.UNKNOWN, "Illegal state");
     }
     if (Date.now() - start > params.timeout) {
       log("Timeout after %d attempts (%dms)", retryContext.attempt, Date.now() - start);
-      return err(ConnectionStatus.TIMEOUT);
+      return status(StatusCode.TIMEOUT, "Connection timed out");
     }
     await delay(retryContext.nextInterval);
   }
@@ -61,7 +71,7 @@ function next(
   nextInterval: number;
 } {
   const shouldUseIPV4 =
-    retryContext.shouldUseIPV4 || retryContext.lastStatus === ConnectionStatus.SHOULD_USE_IP_V4;
+    retryContext.shouldUseIPV4 || retryContext.lastStatus?.code === StatusCode.__SHOULD_USE_IP_V4;
   const ipVersion = ((): 4 | 6 => {
     if (shouldUseIPV4) {
       return 4;
@@ -83,37 +93,31 @@ function next(
     // After executing IPv6, use the default interval
     return retryContext.defaultInterval;
   })();
-  const shouldRetry =
-    retryContext.lastStatus === ConnectionStatus.SHOULD_RETRY ||
-    retryContext.lastStatus === ConnectionStatus.SHOULD_USE_IP_V4;
   return {
     shouldUseIPV4,
     attempt,
     defaultInterval: retryContext.defaultInterval,
     ipVersion,
     nextInterval,
-    shouldRetry,
+    shouldRetry: retryContext.lastStatus ? shouldRetry(retryContext.lastStatus) : false,
   };
 }
 
-async function once(
-  params: PollParams & { ipVersion: 4 | 6 },
-): Promise<Result<undefined, ConnectionStatus>> {
-  const socketResult = await createConnection({
+async function once(params: PollParams & { ipVersion: 4 | 6 }) {
+  const result = await createConnection({
     host: params.host,
     port: params.port,
     timeout: params.timeout,
     waitForDns: params.waitForDns,
     ipVersion: params.ipVersion,
   });
-  if (isErr(socketResult)) {
-    return socketResult;
+  if (isSocketConnected(result)) {
+    return await ping(params.protocol, {
+      socket: result.socket,
+      pingTimeout: DEFAULT_PING_TIMEOUT,
+    });
   }
-  const pingRes = await ping(params.protocol, {
-    socket: socketResult.value,
-    pingTimeout: DEFAULT_PING_TIMEOUT,
-  });
-  return pingRes;
+  return result;
 }
 
 type PollParams = {

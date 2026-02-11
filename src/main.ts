@@ -4,10 +4,10 @@ import consola from "consola";
 import { debug } from "node:util";
 import * as z from "zod";
 
+import { StatusCode } from "./ConnectionStatus";
 import { defineCommand } from "./defineCommand";
 import { ExitCode, toExitCode } from "./ExitCode";
 import { poll } from "./poll";
-import { isErr } from "./result/Result";
 import { Protocol } from "./types/Protocol";
 
 export const main = defineCommand({
@@ -80,8 +80,8 @@ export const main = defineCommand({
       interval: context.args.interval,
       waitForDns: context.args["wait-for-dns"],
     });
-    if (isErr(res)) {
-      process.exit(toExitCode(res.error));
+    if (res.code !== StatusCode.CONNECTED) {
+      process.exit(toExitCode(res));
     }
     consola.success(`Service is ready at ${context.args.host}:${context.args.port}`);
     process.exit(ExitCode.SUCCESS);
