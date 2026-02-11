@@ -35,6 +35,15 @@ export function createConnection({
     socket.on("connect", () => {
       log("Connected to %s:%d", host, port);
       clearTimeout(timer);
+      // Pause immediately so we don't start consuming incoming bytes until
+      // all handlers have attached their listeners (e.g. MySQL sends a handshake
+      // right after connect).
+      //
+      // In practice, data is typically buffered until the socket/stream is put into
+      // flowing mode (e.g. when a "data" listener is attached). We call pause() here
+      // to make the intended sequencing explicit and avoid relying on implicit
+      // stream-mode transitions.
+      socket.pause();
       return resolve(
         status(StatusCode.__SOCKET_CONNECTED, `Connected to ${host}:${port}`, { socket }),
       );

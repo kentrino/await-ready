@@ -4,6 +4,7 @@ import type { Protocol } from "../types/Protocol";
 
 import { StatusCode, status, type PingStatus } from "../ConnectionStatus";
 import { http } from "./http";
+import { mysql } from "./mysql";
 import { pg } from "./pg";
 
 export type PingParams = {
@@ -23,6 +24,8 @@ export async function ping(protocol: Protocol, params: PingParams): Promise<Ping
       return http(params);
     case "pg":
       return pg(params);
+    case "mysql":
+      return mysql(params);
     default:
       return status(StatusCode.PROTOCOL_NOT_SUPPORTED, `Protocol not supported: ${protocol}`);
   }

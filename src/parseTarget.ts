@@ -1,10 +1,11 @@
 import { debug } from "node:util";
-import * as z from "zod";
+
+import { Protocol } from "./types/Protocol";
 
 const log = debug("await-ready:parseTarget");
 
 export type ParsedTarget = {
-  protocol: "http" | "https";
+  protocol: Protocol;
   host: string;
   port: number;
   path: string | undefined;
@@ -19,6 +20,8 @@ export type ParsedTarget = {
  * - `:8080`                             → localhost:8080 (none)
  * - `localhost:3000`                    → localhost:3000 (none)
  * - `http://localhost:5000/healthcheck` → localhost:5000 (http) with path
+ * - `pg://localhost:5432`               → localhost:5432 (pg)
+ * - `mysql://localhost:3306`            → localhost:3306 (mysql)
  */
 export function parseTarget(target: string): ParsedTarget | undefined {
   if (!target) {
@@ -30,12 +33,12 @@ export function parseTarget(target: string): ParsedTarget | undefined {
 
   //  Check for a protocol prefix (e.g. "http://", "pg://").
   const protocolMatch = remaining.match(/^(\w+):\/\//);
-  let protocol: "http" | "https" = "http";
+  let protocol: Protocol = "none";
   if (protocolMatch && protocolMatch[1]) {
     const raw = protocolMatch[1].toLowerCase();
-    const parsed = z.enum(["http", "https"]).safeParse(raw);
+    const parsed = Protocol.safeParse(raw);
     if (!parsed.success) {
-      log("'%s' is not a supported protocol (expected http or https)", raw);
+      log("'%s' is not a supported protocol (expected %s)", raw, Protocol.options.join(", "));
       return undefined;
     }
     protocol = parsed.data;
@@ -48,7 +51,7 @@ export function parseTarget(target: string): ParsedTarget | undefined {
   remaining = pathStart !== -1 ? remaining.substring(0, pathStart) : remaining;
 
   //  Default ports for known protocols.
-  const defaultPorts: Record<string, number> = { http: 80, https: 443 };
+  const defaultPorts: Record<string, number> = { http: 80, https: 443, pg: 5432, mysql: 3306 };
 
   //  Split into host and port on ':'.
   const parts = remaining.split(":");

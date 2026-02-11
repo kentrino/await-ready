@@ -71,5 +71,8 @@ export function pg({ pingTimeout: timeout, socket }: PingParams): Promise<PingSt
         status(StatusCode.__UNKNOWN_PING_ERROR, "Socket error while pinging PostgreSQL"),
       );
     });
+
+    // Resume the socket after all listeners are attached (it was paused by createConnection).
+    socket.resume();
   });
 }

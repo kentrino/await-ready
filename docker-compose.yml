@@ -1,0 +1,25 @@
+services:
+  # --- HTTP ---
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+
+  # --- PostgreSQL ---
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+
+  # --- MySQL ---
+  mysql:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test

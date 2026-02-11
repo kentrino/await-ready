@@ -74,5 +74,8 @@ export function http({ pingTimeout: timeout, socket, path }: PingParams): Promis
         }),
       );
     });
+
+    // Resume the socket after all listeners are attached (it was paused by createConnection).
+    socket.resume();
   });
 }
