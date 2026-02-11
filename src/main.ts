@@ -56,8 +56,8 @@ export const main = defineCommand({
   },
   validator: z.object({
     host: z.string(),
-    port: z.string().transform(Number),
-    timeout: z.string().transform(Number),
+    port: z.string().transform(Number).pipe(z.number().int().min(1).max(65535)),
+    timeout: z.string().transform(Number).pipe(z.number().int().min(0)),
     protocol: Protocol,
     interval: z.string().transform(Number).pipe(z.number().min(10)),
     ["wait-for-dns"]: z.boolean(),
