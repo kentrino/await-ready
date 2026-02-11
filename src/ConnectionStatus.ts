@@ -10,9 +10,14 @@ const __statusCode = {
   UNKNOWN: undefined,
   PROTOCOL_NOT_SUPPORTED: undefined,
   INVALID_PROTOCOL: undefined,
-  __SHOULD_RETRY: undefined,
   __SHOULD_USE_IP_V4: undefined,
   __SOCKET_CONNECTED: undefined,
+  __ECONNREFUSED: undefined,
+  __EACCES: undefined,
+  __ECONNRESET: undefined,
+  __ENOTFOUND: undefined,
+  __NO_DATA_RECEIVED: undefined,
+  __UNKNOWN_PING_ERROR: undefined,
 } as const;
 
 export const StatusCode = {
@@ -22,9 +27,14 @@ export const StatusCode = {
   UNKNOWN: "UNKNOWN",
   PROTOCOL_NOT_SUPPORTED: "PROTOCOL_NOT_SUPPORTED",
   INVALID_PROTOCOL: "INVALID_PROTOCOL",
-  __SHOULD_RETRY: "__SHOULD_RETRY",
   __SHOULD_USE_IP_V4: "__SHOULD_USE_IP_V4",
   __SOCKET_CONNECTED: "__SOCKET_CONNECTED",
+  __ECONNREFUSED: "__ECONNREFUSED",
+  __EACCES: "__EACCES",
+  __ECONNRESET: "__ECONNRESET",
+  __ENOTFOUND: "__ENOTFOUND",
+  __NO_DATA_RECEIVED: "__NO_DATA_RECEIVED",
+  __UNKNOWN_PING_ERROR: "__UNKNOWN_PING_ERROR",
 } as const satisfies {
   [K in keyof typeof __statusCode]: `${K}`;
 };
@@ -69,14 +79,18 @@ export type CreateConnectionStatus = ConnectionStatus<
   | typeof StatusCode.UNKNOWN
   | typeof StatusCode.HOST_NOT_FOUND
   | typeof StatusCode.__SOCKET_CONNECTED
-  | typeof StatusCode.__SHOULD_RETRY
   | typeof StatusCode.__SHOULD_USE_IP_V4
+  | typeof StatusCode.__ECONNREFUSED
+  | typeof StatusCode.__EACCES
+  | typeof StatusCode.__ECONNRESET
+  | typeof StatusCode.__ENOTFOUND
 >;
 export type PingStatus = ConnectionStatus<
   | typeof StatusCode.PROTOCOL_NOT_SUPPORTED
   | typeof StatusCode.CONNECTED
   | typeof StatusCode.INVALID_PROTOCOL
-  | typeof StatusCode.__SHOULD_RETRY
+  | typeof StatusCode.__NO_DATA_RECEIVED
+  | typeof StatusCode.__UNKNOWN_PING_ERROR
 >;
 export type PollStatus = ConnectionStatus<
   | typeof StatusCode.TIMEOUT
@@ -99,5 +113,11 @@ export function status<T extends StatusCode>(...args: StatusFnParams<T>): Connec
 }
 
 export function shouldRetry(s: ConnectionStatus): boolean {
-  return s.code === StatusCode.__SHOULD_RETRY || s.code === StatusCode.__SHOULD_USE_IP_V4;
+  return (
+    s.code === StatusCode.__SHOULD_USE_IP_V4 ||
+    s.code === StatusCode.__ECONNREFUSED ||
+    s.code === StatusCode.__EACCES ||
+    s.code === StatusCode.__ECONNRESET ||
+    s.code === StatusCode.__ENOTFOUND
+  );
 }

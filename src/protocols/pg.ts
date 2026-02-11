@@ -39,7 +39,7 @@ export function pg({ pingTimeout: timeout, socket }: PingParams): Promise<PingSt
         socket.destroy();
         clearTimeout(timer);
         log("No data received in %dms", timeout);
-        return resolve(status(StatusCode.__SHOULD_RETRY, `No data received in ${timeout}ms`));
+        return resolve(status(StatusCode.__NO_DATA_RECEIVED, `No data received in ${timeout}ms`));
       }, timeout);
     }
     const buf = Buffer.alloc(SSL_REQUEST_LENGTH);
@@ -67,7 +67,9 @@ export function pg({ pingTimeout: timeout, socket }: PingParams): Promise<PingSt
       socket.destroy();
       log("Socket error");
       clearTimeout(timer);
-      return resolve(status(StatusCode.__SHOULD_RETRY, "Socket error"));
+      return resolve(
+        status(StatusCode.__UNKNOWN_PING_ERROR, "Socket error while pinging PostgreSQL"),
+      );
     });
   });
 }

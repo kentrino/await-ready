@@ -1,5 +1,4 @@
 // oxlint-disable-next-line import/no-named-as-default
-import consola from "consola";
 import { createConnection as createConnectionNode } from "node:net";
 import { debug } from "node:util";
 
@@ -49,11 +48,17 @@ export function createConnection({
         log("Unknown error: %O", error);
         return resolve(status(StatusCode.UNKNOWN, "Unknown error", { cause: error }));
       }
-      if (error.code === "ECONNREFUSED" || error.code === "EACCES") {
-        //  We successfully *tried* to connect, so resolve with false so that we try again.
-        log("Socket not open: %s", error.code);
+      if (error.code === "ECONNREFUSED") {
+        log("Socket not open: ECONNREFUSED");
         return resolve(
-          status(StatusCode.__SHOULD_RETRY, `Socket not open: ${error.code}`, {
+          status(StatusCode.__ECONNREFUSED, "Socket not open: ECONNREFUSED", {
+            cause: error,
+          }),
+        );
+      } else if (error.code === "EACCES") {
+        log("Socket not open: EACCES");
+        return resolve(
+          status(StatusCode.__EACCES, "Socket not open: EACCES", {
             cause: error,
           }),
         );
@@ -70,7 +75,7 @@ export function createConnection({
         //  we can read from it, we can normally just try again.
         log("Socket not open: ECONNRESET");
         return resolve(
-          status(StatusCode.__SHOULD_RETRY, "Socket not open: ECONNRESET", {
+          status(StatusCode.__ECONNRESET, "Socket not open: ECONNRESET", {
             cause: error,
           }),
         );
@@ -97,14 +102,13 @@ export function createConnection({
         //  again...
         if (waitForDns === true)
           return resolve(
-            status(StatusCode.__SHOULD_RETRY, "Socket cannot be opened: ENOTFOUND", {
+            status(StatusCode.__ENOTFOUND, "Socket cannot be opened: ENOTFOUND", {
               cause: error,
             }),
           );
 
         // ...otherwise, we will explicitly fail with a meaningful error for
         //  the user.
-        consola.error("Host not found: %s:%d", host, port);
         return resolve(
           status(StatusCode.HOST_NOT_FOUND, `Host not found: ${host}:${port}`, {
             cause: error,
