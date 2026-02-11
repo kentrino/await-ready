@@ -3,10 +3,12 @@ import * as z from "zod";
 import { parseTarget } from "./parseTarget";
 import { Protocol } from "./types/Protocol";
 
+const ProtocolInput = z.enum(["pg", ...Protocol.options] as const);
+
 export const args = {
   target: {
     type: "positional",
-    description: "Target to connect to (e.g. 3000, localhost:3000, pg://localhost:5432)",
+    description: "Target to connect to (e.g. 3000, localhost:3000, postgresql://localhost:5432)",
     required: false,
   },
   host: {
@@ -29,7 +31,8 @@ export const args = {
   protocol: {
     type: "enum",
     default: "none",
-    options: Protocol.options,
+    options: ProtocolInput.options,
+    description: "The protocol to check",
     required: false,
   },
   interval: {
@@ -52,7 +55,7 @@ const input = z.object({
   host: z.string(),
   port: z.string().optional(),
   timeout: z.string().transform(Number).pipe(z.number().int().min(0)),
-  protocol: Protocol,
+  protocol: ProtocolInput,
   interval: z.string().transform(Number).pipe(z.number().min(10)),
   ["wait-for-dns"]: z.boolean(),
 });
@@ -98,7 +101,7 @@ export const Args = input
     return {
       host: v.host,
       port: Number(v.port),
-      protocol: v.protocol,
+      protocol: v.protocol === "pg" ? "postgresql" : v.protocol,
       path: undefined,
       timeout: v.timeout,
       interval: v.interval,

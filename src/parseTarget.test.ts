@@ -116,4 +116,46 @@ describe("parseTarget", () => {
     expect(result!.host).toBe("example.com");
     expect(result!.path).toBe("/status");
   });
+
+  test("should parse postgresql protocol with explicit port", () => {
+    const result = parseTarget("postgresql://db.example.com:5432");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("postgresql");
+    expect(result!.port).toBe(5432);
+    expect(result!.host).toBe("db.example.com");
+    expect(result!.path).toBeUndefined();
+  });
+
+  test("should use default port 5432 for postgresql when port is omitted", () => {
+    const result = parseTarget("postgresql://db.example.com");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("postgresql");
+    expect(result!.port).toBe(5432);
+    expect(result!.host).toBe("db.example.com");
+  });
+
+  test("should parse mysql protocol with explicit port", () => {
+    const result = parseTarget("mysql://db.example.com:3306");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("mysql");
+    expect(result!.port).toBe(3306);
+    expect(result!.host).toBe("db.example.com");
+    expect(result!.path).toBeUndefined();
+  });
+
+  test("should use default port 3306 for mysql when port is omitted", () => {
+    const result = parseTarget("mysql://db.example.com");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("mysql");
+    expect(result!.port).toBe(3306);
+    expect(result!.host).toBe("db.example.com");
+  });
+
+  test("should default to none protocol when no scheme is given", () => {
+    const result = parseTarget("localhost:9090");
+    expect(result).toBeDefined();
+    expect(result!.protocol).toBe("none");
+    expect(result!.host).toBe("localhost");
+    expect(result!.port).toBe(9090);
+  });
 });

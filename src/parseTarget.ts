@@ -20,7 +20,7 @@ export type ParsedTarget = {
  * - `:8080`                             → localhost:8080 (none)
  * - `localhost:3000`                    → localhost:3000 (none)
  * - `http://localhost:5000/healthcheck` → localhost:5000 (http) with path
- * - `pg://localhost:5432`               → localhost:5432 (pg)
+ * - `postgresql://localhost:5432`        → localhost:5432 (postgresql)
  * - `mysql://localhost:3306`            → localhost:3306 (mysql)
  */
 export function parseTarget(target: string): ParsedTarget | undefined {
@@ -31,7 +31,7 @@ export function parseTarget(target: string): ParsedTarget | undefined {
 
   let remaining = target;
 
-  //  Check for a protocol prefix (e.g. "http://", "pg://").
+  //  Check for a protocol prefix (e.g. "http://", "postgresql://").
   const protocolMatch = remaining.match(/^(\w+):\/\//);
   let protocol: Protocol = "none";
   if (protocolMatch && protocolMatch[1]) {
@@ -51,7 +51,7 @@ export function parseTarget(target: string): ParsedTarget | undefined {
   remaining = pathStart !== -1 ? remaining.substring(0, pathStart) : remaining;
 
   //  Default ports for known protocols.
-  const defaultPorts: Record<string, number> = { http: 80, https: 443, pg: 5432, mysql: 3306 };
+  const defaultPorts: Record<string, number> = { http: 80, https: 443, postgresql: 5432, mysql: 3306 };
 
   //  Split into host and port on ':'.
   const parts = remaining.split(":");

@@ -25,9 +25,9 @@ describe("Args", () => {
     });
 
     test("should parse all flags together", () => {
-      const result = parse("-p 5432 --protocol pg --timeout 5000 --interval 200 --wait-for-dns");
+      const result = parse("-p 5432 --protocol postgresql --timeout 5000 --interval 200 --wait-for-dns");
       expect(result.port).toBe(5432);
-      expect(result.protocol).toBe("pg");
+      expect(result.protocol).toBe("postgresql");
       expect(result.timeout).toBe(5000);
       expect(result.interval).toBe(200);
       expect(result["wait-for-dns"]).toBe(true);
@@ -41,6 +41,11 @@ describe("Args", () => {
     test("should accept http protocol", () => {
       const result = parse("-p 8080 --protocol http");
       expect(result.protocol).toBe("http");
+    });
+
+    test("should accept pg as an alias for postgresql", () => {
+      const result = parse("-p 5432 --protocol pg");
+      expect(result.protocol).toBe("postgresql");
     });
 
     test("should reject invalid protocol", () => {
@@ -102,6 +107,20 @@ describe("Args", () => {
 
     test("should fail on invalid target", () => {
       expect(() => parse("not:a:target")).toThrow();
+    });
+
+    test("should parse postgresql:// target with default port", () => {
+      const result = parse("postgresql://localhost");
+      expect(result.protocol).toBe("postgresql");
+      expect(result.host).toBe("localhost");
+      expect(result.port).toBe(5432);
+    });
+
+    test("should parse mysql:// target with explicit port", () => {
+      const result = parse("mysql://db.local:3307");
+      expect(result.protocol).toBe("mysql");
+      expect(result.host).toBe("db.local");
+      expect(result.port).toBe(3307);
     });
   });
 

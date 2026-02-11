@@ -5,7 +5,7 @@ import type { Protocol } from "../types/Protocol";
 import { StatusCode, status, type PingStatus } from "../ConnectionStatus";
 import { http } from "./http";
 import { mysql } from "./mysql";
-import { pg } from "./pg";
+import { postgresql } from "./pg";
 
 export type PingParams = {
   socket: Socket;
@@ -22,8 +22,8 @@ export async function ping(protocol: Protocol, params: PingParams): Promise<Ping
     case "http":
     case "https":
       return http(params);
-    case "pg":
-      return pg(params);
+    case "postgresql":
+      return postgresql(params);
     case "mysql":
       return mysql(params);
     default:
