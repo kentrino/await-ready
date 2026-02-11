@@ -26,7 +26,7 @@ const connectionStatusToExitCode: Record<ConnectionStatus, ExitCode> = {
   [ConnectionStatus.UNKNOWN]: ExitCode.UNKNOWN_ERROR,
   [ConnectionStatus.INVALID_PROTOCOL]: ExitCode.UNKNOWN_ERROR,
   [ConnectionStatus.SHOULD_RETRY]: ExitCode.UNKNOWN_ERROR,
-  [ConnectionStatus.SHOULD_SWITCH_IP_V4]: ExitCode.UNKNOWN_ERROR,
+  [ConnectionStatus.SHOULD_USE_IP_V4]: ExitCode.UNKNOWN_ERROR,
 };
 
 export function toExitCode(status: ConnectionStatus): ExitCode {

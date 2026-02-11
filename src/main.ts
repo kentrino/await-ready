@@ -4,13 +4,10 @@ import consola from "consola";
 import { debug } from "node:util";
 import * as z from "zod";
 
-import { ConnectionStatus } from "./ConnectionStatus";
-import { createConnection } from "./createConnection";
 import { defineCommand } from "./defineCommand";
 import { ExitCode, toExitCode } from "./ExitCode";
-import { poll, type RetryStrategy } from "./poll";
-import { DEFAULT_PING_TIMEOUT, ping } from "./protocols";
-import { isErr, type Result } from "./result/Result";
+import { poll } from "./poll";
+import { isErr } from "./result/Result";
 import { Protocol } from "./types/Protocol";
 
 export const main = defineCommand({
@@ -75,51 +72,15 @@ export const main = defineCommand({
       context.args.protocol,
       context.args.interval,
     );
-    type RetryContext = {
-      ipVersion: 4 | 6;
-    };
-    const retryStrategy: RetryStrategy<ConnectionStatus, RetryContext> = (res, retryContext) => {
-      if (res.error === ConnectionStatus.SHOULD_SWITCH_IP_V4) {
-        return {
-          ...retryContext,
-          ipVersion: 4,
-        };
-      }
-      if (res.error === ConnectionStatus.SHOULD_RETRY) {
-        return retryContext;
-      }
-      // Stop retry
-      return undefined;
-    };
-
-    const res = await poll(
-      async (retryContext): Promise<Result<undefined, ConnectionStatus>> => {
-        const res = await createConnection({
-          host: context.args.host,
-          port: context.args.port,
-          timeout: context.args.timeout,
-          waitForDns: context.args["wait-for-dns"],
-          ...retryContext,
-        });
-        if (isErr(res)) {
-          return res;
-        }
-        const pingRes = await ping(context.args.protocol, {
-          socket: res.value,
-          pingTimeout: DEFAULT_PING_TIMEOUT,
-        });
-        return pingRes;
-      },
-      {
-        timeout: context.args.timeout,
-        initialContext: {
-          ipVersion: 6 as const,
-        },
-        interval: context.args.interval,
-        retryStrategy,
-      },
-    );
-    if (!res.ok) {
+    const res = await poll({
+      host: context.args.host,
+      port: context.args.port,
+      timeout: context.args.timeout,
+      protocol: context.args.protocol,
+      interval: context.args.interval,
+      waitForDns: context.args["wait-for-dns"],
+    });
+    if (isErr(res)) {
       process.exit(toExitCode(res.error));
     }
     consola.success(`Service is ready at ${context.args.host}:${context.args.port}`);

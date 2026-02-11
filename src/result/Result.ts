@@ -21,4 +21,4 @@ export const err = <E>(error: E): Result<never, E> => ({ ok: false, error });
 
 export const isOk = <T, E = Error>(result: Result<T, E>): result is Success<T> => result.ok;
 
-export const isErr = <T, E = Error>(result: Result<T, E>): result is Result<never, E> => !result.ok;
+export const isErr = <T, E = Error>(result: Result<T, E>): result is Failure<E> => !result.ok;
