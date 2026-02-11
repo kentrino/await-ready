@@ -1,43 +1,28 @@
 import type { Socket } from "node:net";
 
-export type IfEquals<X, Y, A = X, B = never> =
+type IfEquals<X, Y, A = X, B = never> =
   (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? A : B;
 
-const __statusCode = {
-  CONNECTED: undefined,
-  TIMEOUT: undefined,
-  HOST_NOT_FOUND: undefined,
-  UNKNOWN: undefined,
-  PROTOCOL_NOT_SUPPORTED: undefined,
-  INVALID_PROTOCOL: undefined,
-  __SHOULD_USE_IP_V4: undefined,
-  __SOCKET_CONNECTED: undefined,
-  __ECONNREFUSED: undefined,
-  __EACCES: undefined,
-  __ECONNRESET: undefined,
-  __ENOTFOUND: undefined,
-  __NO_DATA_RECEIVED: undefined,
-  __UNKNOWN_PING_ERROR: undefined,
-} as const;
+function createEnum<const T extends readonly string[]>(keys: T): { [K in T[number]]: K } {
+  return Object.fromEntries(keys.map((k) => [k, k])) as never;
+}
 
-export const StatusCode = {
-  CONNECTED: "CONNECTED",
-  TIMEOUT: "TIMEOUT",
-  HOST_NOT_FOUND: "HOST_NOT_FOUND",
-  UNKNOWN: "UNKNOWN",
-  PROTOCOL_NOT_SUPPORTED: "PROTOCOL_NOT_SUPPORTED",
-  INVALID_PROTOCOL: "INVALID_PROTOCOL",
-  __SHOULD_USE_IP_V4: "__SHOULD_USE_IP_V4",
-  __SOCKET_CONNECTED: "__SOCKET_CONNECTED",
-  __ECONNREFUSED: "__ECONNREFUSED",
-  __EACCES: "__EACCES",
-  __ECONNRESET: "__ECONNRESET",
-  __ENOTFOUND: "__ENOTFOUND",
-  __NO_DATA_RECEIVED: "__NO_DATA_RECEIVED",
-  __UNKNOWN_PING_ERROR: "__UNKNOWN_PING_ERROR",
-} as const satisfies {
-  [K in keyof typeof __statusCode]: `${K}`;
-};
+export const StatusCode = createEnum([
+  "CONNECTED",
+  "TIMEOUT",
+  "HOST_NOT_FOUND",
+  "UNKNOWN",
+  "PROTOCOL_NOT_SUPPORTED",
+  "INVALID_PROTOCOL",
+  "__SHOULD_USE_IP_V4",
+  "__SOCKET_CONNECTED",
+  "__ECONNREFUSED",
+  "__EACCES",
+  "__ECONNRESET",
+  "__ENOTFOUND",
+  "__NO_DATA_RECEIVED",
+  "__UNKNOWN_PING_ERROR",
+] as const);
 
 export type StatusCode = (typeof StatusCode)[keyof typeof StatusCode];
 
