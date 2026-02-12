@@ -2,10 +2,7 @@
 
 **Wait for a service to become reachable before moving on.**
 
-A lightweight CLI (and library) that polls a host + port until it responds --
-perfect for Docker Compose health checks, CI pipelines, and boot scripts. Ships
-with first-class support for HTTP, PostgreSQL, MySQL, and Redis handshakes so
-you know the service is _actually_ ready, not just listening.
+A small CLI to wait for a service to be _actually_ ready, not just listening. Supports HTTP, PostgreSQL, MySQL, and Redis handshakes out of the box.
 
 ---
 
