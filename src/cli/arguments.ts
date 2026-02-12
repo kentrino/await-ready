@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 import { formatZodError, type AwaitReadyResult } from "../AwaitReadyResult";
-import { OutputMode } from "../output";
+import { OutputMode } from "../types/OutputMode";
 import { Protocol } from "../types/Protocol";
 import { parseTarget } from "./parseTarget";
 import { safeParseArgs } from "./safeParseArgs";

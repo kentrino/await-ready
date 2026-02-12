@@ -1,7 +1,4 @@
-import * as z from "zod";
-
-export const OutputMode = z.enum(["dots", "spinner", "sl", "silent"]);
-export type OutputMode = z.infer<typeof OutputMode>;
+import type { OutputMode } from "./types/OutputMode";
 
 export type OutputStrategy = {
   /** Called once before the first poll attempt. */
