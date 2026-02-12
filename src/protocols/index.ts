@@ -6,6 +6,7 @@ import { StatusCode, status, type PingStatus } from "../ConnectionStatus";
 import { http } from "./http";
 import { mysql } from "./mysql";
 import { postgresql } from "./pg";
+import { redis } from "./redis";
 
 export type PingParams = {
   socket: Socket;
@@ -26,6 +27,8 @@ export async function ping(protocol: Protocol, params: PingParams): Promise<Ping
       return postgresql(params);
     case "mysql":
       return mysql(params);
+    case "redis":
+      return redis(params);
     default:
       return status(StatusCode.PROTOCOL_NOT_SUPPORTED, `Protocol not supported: ${protocol}`);
   }

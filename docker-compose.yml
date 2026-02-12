@@ -16,6 +16,12 @@ services:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
 
+  # --- Redis ---
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
   # --- MySQL (oldest available on Docker Hub) ---
   mysql:
     image: mysql:5.5
