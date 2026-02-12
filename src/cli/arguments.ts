@@ -1,10 +1,10 @@
 import * as z from "zod";
 
-import { safeParseArgs } from "./lib/citty";
-import { OutputMode } from "./output";
+import { OutputMode } from "../output";
+import { formatZodError, type AwaitReadyResult } from "../result/AwaitReadyResult";
+import { Protocol } from "../types/Protocol";
 import { parseTarget } from "./parseTarget";
-import { formatZodError, type AwaitReadyResult } from "./result/AwaitReadyResult";
-import { Protocol } from "./types/Protocol";
+import { safeParseArgs } from "./safeParseArgs";
 
 const ProtocolInput = z.enum(["pg", ...Protocol.options] as const);
 

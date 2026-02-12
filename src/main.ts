@@ -1,9 +1,8 @@
 import { runMain } from "citty";
 import { debug } from "node:util";
 
-import { args, Args } from "./arguments";
+import { args, Args, defineCommand } from "./cli";
 import { StatusCode } from "./ConnectionStatus";
-import { defineCommand } from "./defineCommand";
 import { ExitCode, toExitCode } from "./ExitCode";
 import { createOutput } from "./output";
 import { poll } from "./poll";

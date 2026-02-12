@@ -9,8 +9,8 @@ import {
 } from "citty";
 import { z } from "zod";
 
-import { ExitCode } from "./ExitCode";
-import { cyan, red } from "./util/color";
+import { ExitCode } from "../ExitCode";
+import { cyan, red } from "../util/color";
 
 export function defineCommand<Z extends z.ZodType, const T extends ArgsDef = ArgsDef>(
   def: Omit<CommandDef<T>, "run"> & {

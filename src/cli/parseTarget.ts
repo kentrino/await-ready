@@ -29,7 +29,7 @@
 
 import { debug } from "node:util";
 
-import { Protocol } from "./types/Protocol";
+import { Protocol } from "../types/Protocol";
 
 const log = debug("await-ready:parseTarget");
 
@@ -80,7 +80,13 @@ export function parseTarget(target: string): ParsedTarget | undefined {
   remaining = pathStart !== -1 ? remaining.substring(0, pathStart) : remaining;
 
   //  Default ports for known protocols.
-  const defaultPorts: Record<string, number> = { http: 80, https: 443, postgresql: 5432, mysql: 3306, redis: 6379 };
+  const defaultPorts: Record<string, number> = {
+    http: 80,
+    https: 443,
+    postgresql: 5432,
+    mysql: 3306,
+    redis: 6379,
+  };
 
   //  Split into host and port on ':'.
   const parts = remaining.split(":");
