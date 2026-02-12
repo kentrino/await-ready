@@ -5,6 +5,7 @@ import { trimIndent } from "./util/trimIndent";
 
 /** Strip ANSI escape codes and bare carriage returns for easier assertions. */
 function stripAnsi(s: string): string {
+  // oxlint-disable-next-line no-control-regex
   return s.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "").replace(/\r/g, "");
 }
 
@@ -314,9 +315,7 @@ describe("createOutput - sl mode", () => {
       const lines = stripped.split("\n");
       const trainLines = lines.slice(3, 9).map((l) => l.trimEnd());
       const minIndent = Math.min(
-        ...trainLines
-          .filter((l) => l.length > 0)
-          .map((l) => l.match(/^\s*/)![0].length),
+        ...trainLines.filter((l) => l.length > 0).map((l) => l.match(/^\s*/)![0].length),
       );
       return trainLines.map((l) => l.slice(minIndent)).join("\n");
     }
@@ -350,9 +349,7 @@ describe("createOutput - sl mode", () => {
       const lines = stripped.split("\n");
       const displayLines = lines.slice(0, 9).map((l) => l.trimEnd());
       const minIndent = Math.min(
-        ...displayLines
-          .filter((l) => l.length > 0)
-          .map((l) => l.match(/^\s*/)![0].length),
+        ...displayLines.filter((l) => l.length > 0).map((l) => l.match(/^\s*/)![0].length),
       );
       return displayLines.map((l) => l.slice(minIndent)).join("\n");
     }

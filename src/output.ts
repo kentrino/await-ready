@@ -223,14 +223,15 @@ function createSlOutput(): OutputStrategy {
 
     // --- Smoke lines ---
     for (let s = 0; s < SL_SMOKE_HEIGHT; s++) {
-      const buf = new Array(cols).fill(" ");
+      const buf = Array.from({ length: cols }, () => " ");
       for (const p of smokes) {
         if (p.row === s && p.age < SL_SMOKE_SHAPES[0]!.length) {
           const shape = SL_SMOKE_SHAPES[p.kind]![p.age]!;
           for (let j = 0; j < shape.length; j++) {
+            const ch = shape[j];
             const col = p.col + j;
-            if (col >= 0 && col < cols && shape[j] !== " ") {
-              buf[col] = shape[j];
+            if (ch && col >= 0 && col < cols && ch !== " ") {
+              buf[col] = ch;
             }
           }
         }
@@ -240,20 +241,22 @@ function createSlOutput(): OutputStrategy {
 
     // --- Train lines ---
     for (let row = 0; row < SL_TRAIN_HEIGHT; row++) {
-      const buf = new Array(cols).fill(" ");
+      const buf = Array.from({ length: cols }, () => " ");
 
       // Locomotive
       const locoLine = locoLines[row]!;
       for (let j = 0; j < locoLine.length; j++) {
+        const ch = locoLine[j];
         const col = position + j;
-        if (col >= 0 && col < cols) buf[col] = locoLine[j];
+        if (ch && col >= 0 && col < cols) buf[col] = ch;
       }
 
       // Coal tender
       const coalLine = SL_COAL[row]!;
       for (let j = 0; j < coalLine.length; j++) {
+        const ch = coalLine[j];
         const col = position + SL_COAL_OFFSET + j;
-        if (col >= 0 && col < cols) buf[col] = coalLine[j];
+        if (ch && col >= 0 && col < cols) buf[col] = ch;
       }
 
       output += "\x1b[2K" + buf.join("") + "\n";
