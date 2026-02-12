@@ -125,6 +125,7 @@ export const Args = input
         ctx.addIssue({
           code: "custom",
           message: `Invalid target: '${v.target}'`,
+          path: ["target"],
         });
         return z.NEVER;
       }
@@ -143,6 +144,7 @@ export const Args = input
       ctx.addIssue({
         code: "custom",
         message: "A valid port is required. Specify a target or use -p.",
+        path: ["port"],
       });
       return z.NEVER;
     }
