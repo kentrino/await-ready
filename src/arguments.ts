@@ -1,10 +1,30 @@
 import * as z from "zod";
 
+import { safeParseArgs } from "./lib/citty";
 import { OutputMode } from "./output";
 import { parseTarget } from "./parseTarget";
+import { formatZodError, type AwaitReadyResult } from "./result/AwaitReadyResult";
 import { Protocol } from "./types/Protocol";
 
 const ProtocolInput = z.enum(["pg", ...Protocol.options] as const);
+
+export function parseArgs(rawArgs: string[]): AwaitReadyResult<z.output<typeof Args>> {
+  const parsed = safeParseArgs(rawArgs, args);
+  if (!parsed.success) {
+    return parsed;
+  }
+  const res = Args.safeParse(parsed.value);
+  if (!res.success) {
+    return {
+      success: false,
+      error: formatZodError(res.error),
+    };
+  }
+  return {
+    success: true,
+    value: res.data,
+  };
+}
 
 export const args = {
   target: {
@@ -68,10 +88,18 @@ export const args = {
 const input = z.object({
   target: z.string().optional(),
   host: z.string(),
-  port: z.string().optional(),
-  timeout: z.string().transform(Number).pipe(z.number().int().min(0)),
+  port: z.string().regex(/^\d+$/, "Port must be a positive integer").optional(),
+  timeout: z
+    .string()
+    .regex(/^\d+$/, "Timeout must be a positive integer")
+    .transform(Number)
+    .pipe(z.number().int().min(0)),
   protocol: ProtocolInput,
-  interval: z.string().transform(Number).pipe(z.number().min(10)),
+  interval: z
+    .string()
+    .regex(/^\d+$/, "Interval must be a positive integer greater than 10")
+    .transform(Number)
+    .pipe(z.number().min(10)),
   output: OutputMode,
   silent: z.boolean(),
   ["wait-for-dns"]: z.boolean(),
