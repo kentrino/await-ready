@@ -104,6 +104,7 @@ export function shouldRetry(s: ConnectionStatus): boolean {
     s.code === StatusCode.__ECONNREFUSED ||
     s.code === StatusCode.__EACCES ||
     s.code === StatusCode.__ECONNRESET ||
-    s.code === StatusCode.__ENOTFOUND
+    s.code === StatusCode.__ENOTFOUND ||
+    s.code === StatusCode.__UNKNOWN_PING_ERROR
   );
 }

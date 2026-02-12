@@ -185,6 +185,45 @@ describe("awaitReady", () => {
     expect(result.code).toBe(StatusCode.CONNECTED);
   });
 
+  test("should retry when ping encounters a socket error (__UNKNOWN_PING_ERROR), then connect once server responds", async () => {
+    // A TCP server that initially accepts connections but immediately destroys
+    // them (triggering __UNKNOWN_PING_ERROR from the HTTP ping). After a delay
+    // it starts responding with a valid HTTP response.
+    let shouldRespond = false;
+    const server = createServer((socket) => {
+      if (shouldRespond) {
+        socket.on("data", () => {
+          socket.write("HTTP/1.1 200 OK\r\n\r\n");
+          socket.end();
+        });
+      } else {
+        // Accept TCP but immediately destroy → socket error during ping
+        socket.destroy();
+      }
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const port = (server.address() as { port: number }).port;
+
+    // After 100ms, start responding to HTTP requests
+    setTimeout(() => {
+      shouldRespond = true;
+    }, 100);
+
+    const result = await poll({
+      ...defaults,
+      host: "127.0.0.1",
+      port,
+      timeout: 5000,
+      interval: 10,
+      protocol: "http",
+    });
+
+    server.close();
+    // shouldRetry must include __UNKNOWN_PING_ERROR so poll retries until the
+    // server starts responding, instead of giving up with "Illegal state".
+    expect(result.code).toBe(StatusCode.CONNECTED);
+  });
+
   test("should not error on ENOTFOUND when wait-for-dns is true, and timeout instead", async () => {
     const timeout = 300;
     const delta = 200;
