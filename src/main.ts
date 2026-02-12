@@ -6,11 +6,12 @@ import { StatusCode } from "./ConnectionStatus";
 import { ExitCode, toExitCode } from "./ExitCode";
 import { createOutput } from "./output";
 import { poll } from "./poll";
+import { VERSION } from "./version";
 
 export const main = defineCommand({
   meta: {
     name: "await-ready",
-    version: "0.0.1",
+    version: VERSION,
     description: "Check if a service is ready",
   },
   args,
