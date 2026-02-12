@@ -15,8 +15,13 @@ export type AwaitReadyParams = {
   onRetry?: (attempt: number, elapsedMs: number) => void;
 };
 
-export async function awaitReady(params: AwaitReadyParams): Promise<AwaitReadyResult<{}>> {
-  const res = await poll(params);
+export async function awaitReady({
+  waitForDns = false,
+  interval = 500,
+  timeout = 10_000,
+  ...params
+}: AwaitReadyParams): Promise<AwaitReadyResult<{}>> {
+  const res = await poll({ ...params, waitForDns, interval, timeout });
   if (res.code === StatusCode.CONNECTED) {
     return { success: true, value: {} };
   }
