@@ -121,7 +121,7 @@ async function once(params: PollParams & { ipVersion: 4 | 6 }) {
   return result;
 }
 
-export type PollParams = {
+type PollParams = {
   timeout: number;
   host: string;
   port: number;

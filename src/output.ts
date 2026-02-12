@@ -1,6 +1,6 @@
 import type { OutputMode } from "./types/OutputMode";
 
-export type OutputStrategy = {
+type OutputStrategy = {
   /** Called once before the first poll attempt. */
   onStart(host: string, port: number): void;
   /** Called after a failed attempt, right before the retry delay. */

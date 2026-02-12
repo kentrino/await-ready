@@ -1,10 +1,12 @@
-export { parseArgs } from "./cli/arguments";
+export { parseArgs } from "./cli";
 
 export {
-  type AwaitReadyError,
   type AwaitReadyFailure,
   type AwaitReadyResult,
   type AwaitReadySuccess,
+  type AwaitReadyProbeError,
+  type AwaitReadyArgumentError,
+  type AwaitReadyArgumentErrorIssue,
 } from "./AwaitReadyResult";
 
 export { awaitReady, type AwaitReadyParams } from "./awaitReady";

@@ -10,29 +10,29 @@ export interface AwaitReadySuccess<T> {
 
 export interface AwaitReadyFailure {
   success: false;
-  error: AwaitReadyError;
+  error: AwaitReadyArgumentError | AwaitReadyProbeError;
 }
 
-export interface AwaitReadyError {
-  type:
-    | "ArgumentError"
-    | "UnknownError"
-    | "TimeoutError"
-    | "HostNotFoundError"
-    | "InvalidProtocolError";
-  message: string;
-  cause?: Error;
-}
-type __assertion_AwaitReadyError = Satisfies<
-  AwaitReadyError,
-  AwaitReadyArgumentError | AwaitReadyUnknownError
+type __assertion_AwaitReadyFailure = Satisfies<
+  {
+    type:
+      | "ArgumentError"
+      | "UnknownError"
+      | "TimeoutError"
+      | "HostNotFoundError"
+      | "InvalidProtocolError";
+    message: string;
+    cause?: Error;
+  },
+  AwaitReadyFailure["error"]
 >;
 type Satisfies<Constraint, Target extends Constraint> = Target;
 
-export interface AwaitReadyUnknownError {
-  type: "UnknownError";
+export type AwaitReadyProbeError = {
+  type: "TimeoutError" | "HostNotFoundError" | "InvalidProtocolError" | "UnknownError";
   message: string;
-}
+  cause?: Error;
+};
 
 export interface AwaitReadyArgumentError {
   type: "ArgumentError";
@@ -43,7 +43,7 @@ export interface AwaitReadyArgumentError {
 }
 
 // ported from $ZodInvalidTypeExpected
-export type AwaitReadyArgumentErrorExpected =
+type AwaitReadyArgumentErrorIssueExpected =
   | "string"
   | "number"
   | "int"
@@ -71,7 +71,7 @@ export interface AwaitReadyArgumentErrorIssue {
   message: string;
   path: (string | number | symbol)[];
   code: string;
-  expected?: AwaitReadyArgumentErrorExpected;
+  expected?: AwaitReadyArgumentErrorIssueExpected;
 }
 
 export function formatZodError(error: ZodError): AwaitReadyArgumentError {

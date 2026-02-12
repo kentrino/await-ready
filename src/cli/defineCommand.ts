@@ -51,7 +51,7 @@ type ZodCommandContext<Z extends z.ZodType, T extends ArgsDef = ArgsDef> = {
  * Example:
  *   Invalid value for argument: --protocol (foo). Expected one of: pg, http, https, postgresql, mysql, redis, none.
  */
-export function formatIssue<const T extends ArgsDef = ArgsDef>(
+function formatIssue<const T extends ArgsDef = ArgsDef>(
   issue: $ZodIssue,
   context: CommandContext<T>,
 ): string {

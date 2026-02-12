@@ -33,7 +33,7 @@ import { Protocol } from "../types/Protocol";
 
 const log = debug("await-ready:parseTarget");
 
-export type ParsedTarget = {
+type ParsedTarget = {
   protocol: Protocol;
   host: string;
   port: number;
