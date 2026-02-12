@@ -2,13 +2,13 @@
   "name": "await-ready",
   "version": "0.0.5",
   "description": "Check if a service is ready",
+  "license": "MIT",
   "bin": {
     "await-ready": "./dist/main.mjs"
   },
   "files": [
     "dist"
   ],
-  "license": "MIT",
   "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
@@ -28,16 +28,17 @@
     "fmt": "oxfmt --write .",
     "fmt:check": "oxfmt --check .",
     "test": "vitest run",
-    "check": "bun run lint && bun run fmt:check",
+    "knip": "knip-bun",
+    "check": "bun run lint && bun run fmt:check && bun run knip",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "citty": "^0.2.0",
-    "consola": "^3.4.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "knip": "^5.83.1",
     "oxfmt": "^0.28.0",
     "oxlint": "^1.43.0",
     "tsdown": "^0.20.3",
