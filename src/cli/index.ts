@@ -1,2 +1,2 @@
-export { args, Args, parseArgs } from "./arguments";
+export { args, Args, type ArgsOutput, parseArgs } from "./arguments";
 export { defineCommand } from "./defineCommand";
