@@ -26,6 +26,8 @@ export async function poll(params: PollParams): Promise<PollStatus> {
     ipVersion: 4,
     nextInterval: params.interval,
     shouldRetry: true,
+    ipv4NotFound: false,
+    ipv6NotFound: false,
   };
   while (true) {
     log("Attempt %d (elapsed: %dms)", retryContext.attempt, Date.now() - start);
@@ -39,6 +41,14 @@ export async function poll(params: PollParams): Promise<PollStatus> {
       lastStatus: result,
     });
     log("Attempt %d failed: %s (%s)", retryContext.attempt, result.code, result.message);
+
+    // Both address families returned ENOTFOUND/EADDRNOTAVAIL → host is unreachable.
+    // With --wait-for-dns we keep retrying (DNS may appear later).
+    if (retryContext.ipv4NotFound && retryContext.ipv6NotFound && !params.waitForDns) {
+      log("Both IPv4 and IPv6 failed with ENOTFOUND");
+      return status(StatusCode.HOST_NOT_FOUND, `Host not found: ${params.host}:${params.port}`);
+    }
+
     if (!retryContext.shouldRetry) {
       log("Giving up after %d attempts (%dms)", retryContext.attempt, Date.now() - start);
       if (isPollStatus(result)) {
@@ -56,51 +66,38 @@ export async function poll(params: PollParams): Promise<PollStatus> {
 }
 
 type RetryContext = {
-  shouldUseIPV4?: boolean;
   attempt: number;
   defaultInterval: number;
   ipVersion: 4 | 6;
   nextInterval: number;
   shouldRetry: boolean;
+  ipv4NotFound: boolean;
+  ipv6NotFound: boolean;
 };
 
 function next(
   retryContext: RetryContext & {
     lastStatus?: ConnectionStatus;
   },
-): RetryContext & {
-  nextInterval: number;
-} {
-  const shouldUseIPV4 =
-    retryContext.shouldUseIPV4 || retryContext.lastStatus?.code === StatusCode.__SHOULD_USE_IP_V4;
-  const ipVersion = ((): 4 | 6 => {
-    if (shouldUseIPV4) {
-      return 4;
-    }
-    if (retryContext.ipVersion === 4) {
-      return 6;
-    }
-    return 4;
-  })();
+): RetryContext {
+  const ipv4NotFound =
+    retryContext.ipv4NotFound ||
+    (retryContext.ipVersion === 4 && retryContext.lastStatus?.code === StatusCode.__ENOTFOUND);
+  const ipv6NotFound =
+    retryContext.ipv6NotFound ||
+    (retryContext.ipVersion === 6 && retryContext.lastStatus?.code === StatusCode.__ENOTFOUND);
+  const ipVersion: 4 | 6 = retryContext.ipVersion === 4 ? 6 : 4;
   const attempt = retryContext.attempt + 1;
-  const nextInterval = (() => {
-    if (shouldUseIPV4) {
-      return retryContext.defaultInterval;
-    }
-    // Try IPv6 immediately after executing IPv4
-    if (retryContext.ipVersion === 4) {
-      return 0;
-    }
-    // After executing IPv6, use the default interval
-    return retryContext.defaultInterval;
-  })();
+  // Try IPv6 immediately after IPv4; after IPv6, wait the full interval.
+  const nextInterval = retryContext.ipVersion === 4 ? 0 : retryContext.defaultInterval;
   return {
-    shouldUseIPV4,
     attempt,
     defaultInterval: retryContext.defaultInterval,
     ipVersion,
     nextInterval,
     shouldRetry: retryContext.lastStatus ? shouldRetry(retryContext.lastStatus) : false,
+    ipv4NotFound,
+    ipv6NotFound,
   };
 }
 
@@ -109,7 +106,6 @@ async function once(params: PollParams & { ipVersion: 4 | 6 }) {
     host: params.host,
     port: params.port,
     timeout: params.timeout,
-    waitForDns: params.waitForDns,
     ipVersion: params.ipVersion,
   });
   if (isSocketConnected(result)) {
