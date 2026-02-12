@@ -64,8 +64,10 @@ function formatIssue<const T extends ArgsDef = ArgsDef>(
   return `${red(header)} ${cyan(flag)} (${cyan(toString(value))}). ${issue.message}`;
 }
 
-function toString(value: string | boolean | string[]): string {
+function toString(value: string | boolean | string[] | undefined | null): string {
   if (typeof value === "string") return value;
   if (typeof value === "boolean") return value.toString();
+  if (value == null) return "null";
+  if (typeof value === "undefined") return "undefined";
   return value.join(", ");
 }
