@@ -1,6 +1,6 @@
 import { parseArgs as cittyParseArgs, type ArgsDef, type ParsedArgs } from "citty";
 
-import type { AwaitReadyResult } from "../result/AwaitReadyResult";
+import type { AwaitReadyResult } from "../AwaitReadyResult";
 
 export function safeParseArgs<A extends ArgsDef>(
   rawArgs: string[],
