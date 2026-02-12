@@ -116,6 +116,7 @@ async function once(params: PollParams & { ipVersion: 4 | 6 }) {
     return await ping(params.protocol, {
       socket: result.socket,
       pingTimeout: DEFAULT_PING_TIMEOUT,
+      path: params.path,
     });
   }
   return result;
@@ -128,6 +129,7 @@ type PollParams = {
   interval: number;
   waitForDns: boolean;
   protocol: Protocol;
+  path?: string;
   /** Called after a failed attempt, right before the retry delay. */
   onRetry?: (attempt: number, elapsedMs: number) => void;
 };
