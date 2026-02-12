@@ -1,10 +1,6 @@
 # await-ready
 
-**Wait for a service to become reachable before moving on.**
-
 A small CLI to wait for a service to be _actually_ ready, not just listening. Supports HTTP, PostgreSQL, MySQL, and Redis handshakes out of the box.
-
----
 
 ## Install
 
@@ -16,8 +12,6 @@ npm install -g await-ready
 npx await-ready localhost:3000
 bunx await-ready localhost:3000
 ```
-
----
 
 ## Quick Start
 
@@ -34,8 +28,6 @@ await-ready redis://localhost:6379 --timeout 30000
 # Wait for an HTTP health endpoint to respond
 await-ready http://localhost:8080/healthz
 ```
-
----
 
 ## Usage
 
@@ -71,8 +63,6 @@ If no target is given, use `--host` and `--port` (`-p`) instead.
 | `--silent`       | `-s`  | `false`     | Suppress all output (shorthand for `--output silent`)                            |
 | `--wait-for-dns` |       | `false`     | Don't fail on DNS lookup errors -- keep retrying until the name resolves         |
 
----
-
 ## Protocols
 
 When `--protocol` is `none` (the default), `await-ready` performs a plain TCP
@@ -89,8 +79,6 @@ connect. For application-level protocols it goes one step further:
 > **Tip:** You can alias `pg` to `postgresql` on the command line:
 > `--protocol pg`
 
----
-
 ## Exit Codes
 
 Compatible with [wait-port](https://github.com/dwmkerr/wait-port) -- drop-in
@@ -104,8 +92,6 @@ replacement in existing scripts.
 | `3`  | Unknown / unexpected error                 |
 | `4`  | Host not found (DNS resolution failed)     |
 
----
-
 ## Output Modes
 
 | Mode      | Description                                                         |
@@ -114,8 +100,6 @@ replacement in existing scripts.
 | `spinner` | Animated spinner (falls back to dots outside a TTY)                 |
 | `sl`      | ASCII steam locomotive animation (falls back to dots outside a TTY) |
 | `silent`  | No output at all                                                    |
-
----
 
 ## Examples
 
@@ -173,8 +157,6 @@ npm test
 await-ready myservice:3000 --wait-for-dns --timeout 60000
 ```
 
----
-
 ## Programmatic API
 
 `await-ready` also exports a Node.js / Bun-compatible API:
@@ -217,16 +199,12 @@ if (result.success) {
 }
 ```
 
----
-
 ## Acknowledgements
 
 This project is heavily inspired by
 [wait-port](https://github.com/dwmkerr/wait-port) by Dave Kerr. The target
 parsing logic and connection retry strategy are derived from wait-port's
 implementation (MIT licensed). Thank you for the excellent groundwork!
-
----
 
 ## License
 
