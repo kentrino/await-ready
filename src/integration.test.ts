@@ -3,6 +3,10 @@ import type { Socket } from "node:net";
 import { EventEmitter } from "node:events";
 import { describe, expect, test, vi } from "vitest";
 
+if (!process.env.VITEST) {
+  throw new Error("This test must be run with vitest (`bun run test`), not `bun test`.");
+}
+
 /**
  * This test documents a *possible* real-world configuration where:
  * - `--host` omitted → default host is `localhost`
@@ -15,7 +19,7 @@ import { describe, expect, test, vi } from "vitest";
 vi.mock("node:net", localhostMissingIPv4Record);
 
 describe("default host edge case", () => {
-  test("fails when --host is omitted (default localhost) and localhost has no IPv4 record", async () => {
+  test("succeeds when --host is omitted (default localhost) and localhost has no IPv4 record", async () => {
     const { parseArgs } = await import("./cli/arguments");
     const { awaitReady } = await import("./awaitReady");
 
@@ -30,7 +34,6 @@ describe("default host edge case", () => {
       waitForDns: parsed.value["wait-for-dns"],
     });
     expect(res.success).toBe(true);
-    // expect(res.error.type).toBe("HostNotFoundError");
   });
 
   test("succeeds when --host 0.0.0.0 is provided (bypasses name resolution)", async () => {
