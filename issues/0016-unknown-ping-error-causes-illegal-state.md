@@ -60,6 +60,7 @@ if (!retryContext.shouldRetry) {
 3. 結果として `poll()` ループは `status(StatusCode.UNKNOWN, "Illegal state")` を返す
 
 具体的なシナリオ:
+
 - サーバーが起動中で TCP 接続は受け付けるが、プロトコルハンドシェイク前にコネクションをリセットする場合
 - ネットワークの一時的な不安定さで ping 中にソケットエラーが発生する場合
 - これらは一時的なエラーであり、リトライすべきだが、現在は即座に "Illegal state" で終了する

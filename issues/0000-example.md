@@ -34,4 +34,3 @@ let wrapped_kek: [u8; 24] = data[wrapped_kek_offset..wrapped_kek_offset + 24]
 # To-be
 
 境界チェックを適切に行うか、すべてのスライスアクセスを `get()` + `?` に変更する
-

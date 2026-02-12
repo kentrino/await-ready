@@ -47,5 +47,6 @@ gRPC はマイクロサービス間通信で広く使われているが、プロ
 4. `src/parseTarget.ts` — `defaultPorts` に `grpc: 50051` を追加
 
 参考:
+
 - [gRPC Health Checking Protocol](https://github.com/grpc/grpc/blob/master/doc/health-checking.md)
 - [HTTP/2 spec (RFC 7540)](https://httpwg.org/specs/rfc7540.html)
