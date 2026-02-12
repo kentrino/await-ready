@@ -20,87 +20,66 @@ const log = debug("await-ready:awaitReady");
 
 export async function poll(params: PollParams): Promise<PollStatus> {
   let start = Date.now();
-  let retryContext: RetryContext = {
+  let ctx: RetryContext = {
     attempt: 1,
-    defaultInterval: params.interval,
+    interval: params.interval,
     ipVersion: 4,
-    nextInterval: params.interval,
-    shouldRetry: true,
+    ipv4NotFound: false,
+    ipv6NotFound: false,
   };
   while (true) {
-    log("Attempt %d (elapsed: %dms)", retryContext.attempt, Date.now() - start);
-    const result = await once({ ...params, ipVersion: retryContext.ipVersion });
+    log("Attempt %d (elapsed: %dms)", ctx.attempt, Date.now() - start);
+    const result = await once({ ...params, ipVersion: ctx.ipVersion });
     if (result.code === StatusCode.CONNECTED) {
-      log("Success on attempt %d", retryContext.attempt);
+      log("Success on attempt %d", ctx.attempt);
       return result;
     }
-    retryContext = next({
-      ...retryContext,
-      lastStatus: result,
-    });
-    log("Attempt %d failed: %s (%s)", retryContext.attempt, result.code, result.message);
-    if (!retryContext.shouldRetry) {
-      log("Giving up after %d attempts (%dms)", retryContext.attempt, Date.now() - start);
+
+    ctx = advance(ctx, result);
+    log("Attempt %d failed: %s (%s)", ctx.attempt, result.code, result.message);
+
+    // Both address families returned ENOTFOUND/EADDRNOTAVAIL → host is unreachable.
+    // With --wait-for-dns we keep retrying (DNS may appear later).
+    if (ctx.ipv4NotFound && ctx.ipv6NotFound && !params.waitForDns) {
+      log("Both IPv4 and IPv6 failed with ENOTFOUND");
+      return status(StatusCode.HOST_NOT_FOUND, `Host not found: ${params.host}:${params.port}`);
+    }
+
+    if (!shouldRetry(result)) {
+      log("Giving up after %d attempts (%dms)", ctx.attempt, Date.now() - start);
       if (isPollStatus(result)) {
         return result;
       }
       return status(StatusCode.UNKNOWN, "Illegal state");
     }
     if (params.timeout > 0 && Date.now() - start > params.timeout) {
-      log("Timeout after %d attempts (%dms)", retryContext.attempt, Date.now() - start);
+      log("Timeout after %d attempts (%dms)", ctx.attempt, Date.now() - start);
       return status(StatusCode.TIMEOUT, "Connection timed out");
     }
-    params.onRetry?.(retryContext.attempt, Date.now() - start);
-    await delay(retryContext.nextInterval);
+    params.onRetry?.(ctx.attempt, Date.now() - start);
+    // Try IPv6 immediately after IPv4; after IPv6, wait the full interval.
+    await delay(ctx.ipVersion === 4 ? params.interval : 0);
   }
 }
 
+/** Accumulated state across retry attempts. Only real state — no derived values. */
 type RetryContext = {
-  shouldUseIPV4?: boolean;
   attempt: number;
-  defaultInterval: number;
+  interval: number;
   ipVersion: 4 | 6;
-  nextInterval: number;
-  shouldRetry: boolean;
+  ipv4NotFound: boolean;
+  ipv6NotFound: boolean;
 };
 
-function next(
-  retryContext: RetryContext & {
-    lastStatus?: ConnectionStatus;
-  },
-): RetryContext & {
-  nextInterval: number;
-} {
-  const shouldUseIPV4 =
-    retryContext.shouldUseIPV4 || retryContext.lastStatus?.code === StatusCode.__SHOULD_USE_IP_V4;
-  const ipVersion = ((): 4 | 6 => {
-    if (shouldUseIPV4) {
-      return 4;
-    }
-    if (retryContext.ipVersion === 4) {
-      return 6;
-    }
-    return 4;
-  })();
-  const attempt = retryContext.attempt + 1;
-  const nextInterval = (() => {
-    if (shouldUseIPV4) {
-      return retryContext.defaultInterval;
-    }
-    // Try IPv6 immediately after executing IPv4
-    if (retryContext.ipVersion === 4) {
-      return 0;
-    }
-    // After executing IPv6, use the default interval
-    return retryContext.defaultInterval;
-  })();
+function advance(ctx: RetryContext, lastStatus: ConnectionStatus): RetryContext {
   return {
-    shouldUseIPV4,
-    attempt,
-    defaultInterval: retryContext.defaultInterval,
-    ipVersion,
-    nextInterval,
-    shouldRetry: retryContext.lastStatus ? shouldRetry(retryContext.lastStatus) : false,
+    attempt: ctx.attempt + 1,
+    interval: ctx.interval,
+    ipVersion: ctx.ipVersion === 4 ? 6 : 4,
+    ipv4NotFound:
+      ctx.ipv4NotFound || (ctx.ipVersion === 4 && lastStatus.code === StatusCode.__ENOTFOUND),
+    ipv6NotFound:
+      ctx.ipv6NotFound || (ctx.ipVersion === 6 && lastStatus.code === StatusCode.__ENOTFOUND),
   };
 }
 
@@ -109,7 +88,6 @@ async function once(params: PollParams & { ipVersion: 4 | 6 }) {
     host: params.host,
     port: params.port,
     timeout: params.timeout,
-    waitForDns: params.waitForDns,
     ipVersion: params.ipVersion,
   });
   if (isSocketConnected(result)) {

@@ -14,7 +14,6 @@ export const StatusCode = createEnum([
   "UNKNOWN",
   "PROTOCOL_NOT_SUPPORTED",
   "INVALID_PROTOCOL",
-  "__SHOULD_USE_IP_V4",
   "__SOCKET_CONNECTED",
   "__ECONNREFUSED",
   "__EACCES",
@@ -62,9 +61,7 @@ export function isPollStatus(s: ConnectionStatus): s is PollStatus {
 export type CreateConnectionStatus = ConnectionStatus<
   | typeof StatusCode.TIMEOUT
   | typeof StatusCode.UNKNOWN
-  | typeof StatusCode.HOST_NOT_FOUND
   | typeof StatusCode.__SOCKET_CONNECTED
-  | typeof StatusCode.__SHOULD_USE_IP_V4
   | typeof StatusCode.__ECONNREFUSED
   | typeof StatusCode.__EACCES
   | typeof StatusCode.__ECONNRESET
@@ -100,7 +97,6 @@ export function status<T extends StatusCode>(...args: StatusFnParams<T>): Connec
 export function shouldRetry(s: ConnectionStatus): boolean {
   return (
     s.code === StatusCode.__NO_DATA_RECEIVED ||
-    s.code === StatusCode.__SHOULD_USE_IP_V4 ||
     s.code === StatusCode.__ECONNREFUSED ||
     s.code === StatusCode.__EACCES ||
     s.code === StatusCode.__ECONNRESET ||

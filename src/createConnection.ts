@@ -38,13 +38,11 @@ export function createConnection({
   port,
   ipVersion,
   timeout,
-  waitForDns,
 }: {
   host: string;
   port: number;
   ipVersion: 4 | 6;
   timeout: number;
-  waitForDns: boolean;
 }) {
   return new Promise<CreateConnectionStatus>((resolve, _) => {
     const log = debug("await-ready:createConnection");
@@ -117,38 +115,16 @@ export function createConnection({
             cause: error,
           }),
         );
-      } else if (
-        ipVersion === 6 &&
-        (error.code === "EADDRNOTAVAIL" || error.code === "ENOTFOUND")
-      ) {
-        //  This will occur if the IP address we are trying to connect to does not exist
-        //  This can happen for ::1 or other IPv6 addresses if the IPv6 stack is not enabled.
-        //  In this case we disable the IPv6 lookup
-        log(`Socket cannot be opened for IPv6: ${error.code}`);
-        log("Disabling IPv6 lookup");
+      } else if (error.code === "ENOTFOUND" || error.code === "EADDRNOTAVAIL") {
+        //  ENOTFOUND: DNS lookup failed for this address family (e.g. no A or AAAA record).
+        //  EADDRNOTAVAIL: The address is not available on this machine (e.g. IPv6 stack disabled).
+        //
+        //  In both cases, this address family cannot reach the host right now.
+        //  We report it as __ENOTFOUND and let the poll loop try the other family
+        //  before deciding whether the host is truly unreachable.
+        log(`Socket cannot be opened: ${error.code}`);
         return resolve(
-          status(StatusCode.__SHOULD_USE_IP_V4, `Socket cannot be opened for IPv6: ${error.code}`, {
-            cause: error,
-          }),
-        );
-      } else if (error.code === "ENOTFOUND") {
-        //  This will occur if the address is not found, i.e. due to a dns
-        //  lookup fail (normally a problem if the domain is wrong).
-        log("Socket cannot be opened: ENOTFOUND");
-
-        //  If we are going to wait for DNS records, we can actually just try
-        //  again...
-        if (waitForDns === true)
-          return resolve(
-            status(StatusCode.__ENOTFOUND, "Socket cannot be opened: ENOTFOUND", {
-              cause: error,
-            }),
-          );
-
-        // ...otherwise, we will explicitly fail with a meaningful error for
-        //  the user.
-        return resolve(
-          status(StatusCode.HOST_NOT_FOUND, `Host not found: ${host}:${port}`, {
+          status(StatusCode.__ENOTFOUND, `Socket cannot be opened: ${error.code}`, {
             cause: error,
           }),
         );
