@@ -224,6 +224,55 @@ describe("awaitReady", () => {
     expect(result.code).toBe(StatusCode.CONNECTED);
   });
 
+  test("should pass path to HTTP ping handler", async () => {
+    let receivedRequest = "";
+    const server = createServer((socket) => {
+      socket.on("data", (data) => {
+        receivedRequest = data.toString();
+        socket.write("HTTP/1.1 200 OK\r\n\r\n");
+        socket.end();
+      });
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const port = (server.address() as { port: number }).port;
+
+    const result = await poll({
+      ...defaults,
+      host: "127.0.0.1",
+      port,
+      protocol: "http",
+      path: "/healthcheck",
+    });
+
+    server.close();
+    expect(result.code).toBe(StatusCode.CONNECTED);
+    expect(receivedRequest).toMatch(/^GET \/healthcheck HTTP\/1\.1/);
+  });
+
+  test("should use default path when path is not specified", async () => {
+    let receivedRequest = "";
+    const server = createServer((socket) => {
+      socket.on("data", (data) => {
+        receivedRequest = data.toString();
+        socket.write("HTTP/1.1 200 OK\r\n\r\n");
+        socket.end();
+      });
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const port = (server.address() as { port: number }).port;
+
+    const result = await poll({
+      ...defaults,
+      host: "127.0.0.1",
+      port,
+      protocol: "http",
+    });
+
+    server.close();
+    expect(result.code).toBe(StatusCode.CONNECTED);
+    expect(receivedRequest).toMatch(/^GET \/ HTTP\/1\.1/);
+  });
+
   test("should not error on ENOTFOUND when wait-for-dns is true, and timeout instead", async () => {
     const timeout = 300;
     const delta = 200;
