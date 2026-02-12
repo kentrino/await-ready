@@ -10,7 +10,6 @@ export type AwaitReadyParams = {
   protocol: "http" | "https" | "postgresql" | "mysql" | "redis" | "none";
   interval: number;
   path: string | undefined;
-  output: "dots" | "spinner" | "sl" | "silent";
   waitForDns: boolean;
   /** Called after a failed attempt, right before the retry delay. */
   onRetry?: (attempt: number, elapsedMs: number) => void;
