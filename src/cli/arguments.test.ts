@@ -1,6 +1,8 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, expectTypeOf, test } from "vitest";
 
-import { parseArgs } from "./arguments";
+import type { AwaitReadyParams } from "../awaitReady";
+
+import { parseArgs, type ArgsOutput } from "./arguments";
 
 function parseHelper(rawArgs: string) {
   const result = parseArgs(rawArgs.split(/\s+/).filter(Boolean));
@@ -11,6 +13,12 @@ function parseHelper(rawArgs: string) {
 }
 
 describe("Args", () => {
+  test("output type should match AwaitReadyParams", () => {
+    expectTypeOf<ArgsOutput>().branded.toEqualTypeOf<
+      Omit<AwaitReadyParams, "onRetry" | "waitForDns"> & { ["wait-for-dns"]: boolean }
+    >();
+  });
+
   describe("canonical path (flags)", () => {
     test("should parse --host and -p flags", () => {
       const result = parseHelper("--host 127.0.0.1 -p 3000");
@@ -167,11 +175,11 @@ describe("Args", () => {
       expect(result.value.protocol).toBe("none");
     });
 
-    test("should return failure with ArgumentValidationError for missing port", () => {
+    test("should return failure with ArgumentError for missing port", () => {
       const result = parseArgs(["--host", "localhost"]);
       expect(result.success).toBe(false);
       if (result.success) return;
-      expect(result.error.type).toBe("ArgumentValidationError");
+      expect(result.error.type).toBe("ArgumentError");
       expect(result.error.message).toBeDefined();
     });
 
@@ -179,7 +187,7 @@ describe("Args", () => {
       const result = parseArgs(["-p", "99999"]);
       expect(result.success).toBe(false);
       if (result.success) return;
-      expect(result.error.type).toBe("ArgumentValidationError");
+      expect(result.error.type).toBe("ArgumentError");
     });
   });
 

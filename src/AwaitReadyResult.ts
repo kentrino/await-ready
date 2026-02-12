@@ -14,13 +14,18 @@ export interface AwaitReadyFailure {
 }
 
 export interface AwaitReadyError {
-  type: "ArgumentValidationError" | "UnknownError" | "ArgumentError";
+  type:
+    | "ArgumentError"
+    | "UnknownError"
+    | "TimeoutError"
+    | "HostNotFoundError"
+    | "InvalidProtocolError";
   message: string;
   cause?: Error;
 }
 type __assertion_AwaitReadyError = Satisfies<
   AwaitReadyError,
-  AwaitReadyValidationError | AwaitReadyUnknownError
+  AwaitReadyArgumentError | AwaitReadyUnknownError
 >;
 type Satisfies<Constraint, Target extends Constraint> = Target;
 
@@ -31,20 +36,14 @@ export interface AwaitReadyUnknownError {
 
 export interface AwaitReadyArgumentError {
   type: "ArgumentError";
-  message: string;
-  cause?: Error;
-}
-
-export interface AwaitReadyValidationError {
-  type: "ArgumentValidationError";
-  issues: AwaitReadyValidationErrorIssue[];
+  issues: AwaitReadyArgumentErrorIssue[];
   message: string;
   name: string;
   cause?: Error;
 }
 
 // ported from $ZodInvalidTypeExpected
-export type AwaitReadyValidationErrorExpected =
+export type AwaitReadyArgumentErrorExpected =
   | "string"
   | "number"
   | "int"
@@ -68,16 +67,16 @@ export type AwaitReadyValidationErrorExpected =
   | "function"
   | (string & {});
 
-export interface AwaitReadyValidationErrorIssue {
+export interface AwaitReadyArgumentErrorIssue {
   message: string;
   path: (string | number | symbol)[];
   code: string;
-  expected?: AwaitReadyValidationErrorExpected;
+  expected?: AwaitReadyArgumentErrorExpected;
 }
 
-export function formatZodError(error: ZodError): AwaitReadyValidationError {
+export function formatZodError(error: ZodError): AwaitReadyArgumentError {
   return {
-    type: "ArgumentValidationError",
+    type: "ArgumentError",
     issues: error.issues.map(formatZodIssue),
     message: error.message,
     name: error.name,
@@ -85,7 +84,7 @@ export function formatZodError(error: ZodError): AwaitReadyValidationError {
   };
 }
 
-function formatZodIssue(issue: $ZodIssue): AwaitReadyValidationErrorIssue {
+function formatZodIssue(issue: $ZodIssue): AwaitReadyArgumentErrorIssue {
   return {
     message: issue.message,
     path: issue.path,

@@ -38,7 +38,7 @@ const defaults = {
   protocol: "none" as const,
 };
 
-describe("poll", () => {
+describe("awaitReady", () => {
   afterEach(() => {
     vi.mocked(createConnection).mockClear();
   });

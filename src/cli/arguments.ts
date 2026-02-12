@@ -8,7 +8,7 @@ import { safeParseArgs } from "./safeParseArgs";
 
 const ProtocolInput = z.enum(["pg", ...Protocol.options] as const);
 
-export function parseArgs(rawArgs: string[]): AwaitReadyResult<z.output<typeof Args>> {
+export function parseArgs(rawArgs: string[]): AwaitReadyResult<ArgsOutput> {
   const parsed = safeParseArgs(rawArgs, args);
   if (!parsed.success) {
     return parsed;
@@ -115,6 +115,17 @@ const validated = z.object({
   output: OutputMode,
   ["wait-for-dns"]: z.boolean(),
 });
+
+export type ArgsOutput = {
+  host: string;
+  port: number;
+  timeout: number;
+  protocol: "http" | "https" | "postgresql" | "mysql" | "redis" | "none";
+  interval: number;
+  path: string | undefined;
+  output: "dots" | "spinner" | "sl" | "silent";
+  "wait-for-dns": boolean;
+};
 
 export const Args = input
   .transform((v, ctx): z.input<typeof validated> => {

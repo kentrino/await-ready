@@ -10,10 +10,14 @@
   ],
   "license": "MIT",
   "type": "module",
-  "main": "./dist/main.mjs",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "import": "./dist/main.mjs"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
     }
   },
   "scripts": {

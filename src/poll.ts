@@ -16,7 +16,7 @@ import { createConnection } from "./createConnection";
 import { DEFAULT_PING_TIMEOUT, ping } from "./protocols";
 import { delay } from "./util/delay";
 
-const log = debug("await-ready:poll");
+const log = debug("await-ready:awaitReady");
 
 export async function poll(params: PollParams): Promise<PollStatus> {
   let start = Date.now();
@@ -121,7 +121,7 @@ async function once(params: PollParams & { ipVersion: 4 | 6 }) {
   return result;
 }
 
-type PollParams = {
+export type PollParams = {
   timeout: number;
   host: string;
   port: number;
