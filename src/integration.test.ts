@@ -29,10 +29,7 @@ describe("default host edge case", () => {
     expect(parsed.value.host).toBe("localhost");
     expect(parsed.value.protocol).toBe("postgresql");
 
-    const res = await awaitReady({
-      ...parsed.value,
-      waitForDns: parsed.value["wait-for-dns"],
-    });
+    const res = await awaitReady(parsed.value);
     expect(res.success).toBe(true);
   });
 
@@ -46,10 +43,7 @@ describe("default host edge case", () => {
     expect(parsed.value.host).toBe("0.0.0.0");
     expect(parsed.value.protocol).toBe("postgresql");
 
-    const res = await awaitReady({
-      ...parsed.value,
-      waitForDns: parsed.value["wait-for-dns"],
-    });
+    const res = await awaitReady(parsed.value);
     expect(res.success).toBe(true);
   });
 });
