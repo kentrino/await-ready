@@ -116,7 +116,7 @@ const validated = z.object({
   interval: z.number().min(10),
   path: z.union([z.string(), z.undefined()]),
   output: OutputMode,
-  ["wait-for-dns"]: z.boolean(),
+  waitForDns: z.boolean(),
 });
 
 export type ArgsOutput = {
@@ -127,7 +127,7 @@ export type ArgsOutput = {
   interval: number;
   path: string | undefined;
   output: "dots" | "spinner" | "sl" | "silent";
-  "wait-for-dns": boolean;
+  waitForDns: boolean;
 };
 
 export const Args = input
@@ -151,7 +151,7 @@ export const Args = input
         timeout: v.timeout,
         interval: v.interval,
         output,
-        "wait-for-dns": v["wait-for-dns"],
+        waitForDns: v["wait-for-dns"],
       };
     }
     if (!v.port) {
@@ -170,7 +170,7 @@ export const Args = input
       timeout: v.timeout,
       interval: v.interval,
       output,
-      "wait-for-dns": v["wait-for-dns"],
+      waitForDns: v["wait-for-dns"],
     };
   })
   .pipe(validated);

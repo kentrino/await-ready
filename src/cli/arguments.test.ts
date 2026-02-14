@@ -15,9 +15,9 @@ function parseHelper(rawArgs: string) {
 describe("Args", () => {
   test("output type should match AwaitReadyParams", () => {
     expectTypeOf<ArgsOutput>().branded.toEqualTypeOf<
-      Omit<AwaitReadyParams, "onRetry" | "waitForDns"> & {
-        ["wait-for-dns"]: boolean;
+      Omit<AwaitReadyParams, "onRetry"> & {
         output: "dots" | "spinner" | "sl" | "silent";
+        waitForDns: boolean;
       }
     >();
   });
@@ -44,7 +44,7 @@ describe("Args", () => {
       expect(result.protocol).toBe("postgresql");
       expect(result.timeout).toBe(5000);
       expect(result.interval).toBe(200);
-      expect(result["wait-for-dns"]).toBe(true);
+      expect(result.waitForDns).toBe(true);
     });
 
     test("should accept mysql protocol", () => {
@@ -79,7 +79,7 @@ describe("Args", () => {
       const result = parseHelper("-p 8080");
       expect(result.timeout).toBe(10000);
       expect(result.interval).toBe(1000);
-      expect(result["wait-for-dns"]).toBe(false);
+      expect(result.waitForDns).toBe(false);
     });
 
     test("should default output to dots", () => {
@@ -146,7 +146,7 @@ describe("Args", () => {
       expect(result.port).toBe(5432);
       expect(result.timeout).toBe(5000);
       expect(result.interval).toBe(200);
-      expect(result["wait-for-dns"]).toBe(true);
+      expect(result.waitForDns).toBe(true);
     });
 
     test("should fail on invalid target", () => {

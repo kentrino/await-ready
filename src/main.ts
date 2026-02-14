@@ -39,7 +39,7 @@ export const main = defineCommand({
       protocol: context.args.protocol,
       interval: context.args.interval,
       path: context.args.path,
-      waitForDns: context.args["wait-for-dns"],
+      waitForDns: context.args.waitForDns,
       onRetry: (attempt, elapsedMs) => output.onRetry(attempt, elapsedMs),
     });
 
