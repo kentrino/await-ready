@@ -1,15 +1,17 @@
 name: Autofix
 
 on:
-  pull_request:
-    types: [opened, synchronize]
-    branches: [main]
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
 
 jobs:
   autofix:
     name: Autofix with Claude Code
     runs-on: ubuntu-latest
-    if: startsWith(github.head_ref, 'renovate/')
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      startsWith(github.event.workflow_run.head_branch, 'renovate/')
     permissions:
       contents: write
       pull-requests: write
@@ -18,14 +20,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_bots: "renovate[bot]"
-          claude_args: "--model claude-opus-4-6"
+          claude_args: >-
+            --model claude-opus-4-6
+            --max-turns 30
+            --allowedTools
+            "Bash(bun *),Bash(git *),Bash(ls *),Bash(cat *),Bash(find *),Bash(grep *),Bash(head *),Bash(tail *),Bash(wc *),Bash(diff *),Bash(echo *),Bash(pwd),Bash(mkdir *),Bash(rm *),Bash(sed *),Bash(tr *),Bash(sort *),Bash(tee *),Read,Write,Edit"
           prompt: |
-            This is a Renovate dependency update PR.
-            Run /autofix to fix lint and format issues.
+            This is a Renovate dependency update PR where CI has failed.
+            Run /autofix to diagnose and fix the issues.
+
+      - uses: ad-m/github-push-action@v0.8.0
+        with:
+          branch: ${{ github.event.workflow_run.head_branch }}
