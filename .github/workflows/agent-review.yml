@@ -22,17 +22,14 @@ jobs:
       pull-requests: read
       actions: read
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: .github/CODEOWNERS
-          sparse-checkout-cone-mode: false
-
       - name: Verify commenter is a CODEOWNER
         if: github.event_name == 'issue_comment'
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENTER: ${{ github.event.comment.user.login }}
+          REPO: ${{ github.repository }}
         run: |
-          owners=$(grep -o '@[^ ]*' .github/CODEOWNERS | sed 's/@//')
+          owners=$(gh api "repos/$REPO/contents/.github/CODEOWNERS" --jq '.content' | base64 -d | grep -o '@[^ ]*' | sed 's/@//')
           if ! echo "$owners" | grep -qx "$COMMENTER"; then
             echo "::error::$COMMENTER is not a CODEOWNER"
             exit 1
