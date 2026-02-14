@@ -21,6 +21,7 @@ Run `./scripts/gh-pr-diff <PR_NUMBER>` to get the filtered diff
 ### 2. Load existing review comments (dedupe baseline)
 
 Run:
+
 ```bash
 gh api repos/{owner}/{repo}/pulls/{pr}/comments --paginate
 ```
@@ -31,6 +32,7 @@ gh api repos/{owner}/{repo}/pulls/{pr}/comments --paginate
 ### 3. Analyze the diff
 
 Focus on:
+
 - Correctness and potential bugs
 - Security concerns
 - Breaking changes
@@ -40,6 +42,7 @@ Focus on:
 - Unnecessary complexity
 
 Do NOT comment on:
+
 - Style or formatting (handled by oxlint/oxfmt)
 - Anything that is not actionable
 
