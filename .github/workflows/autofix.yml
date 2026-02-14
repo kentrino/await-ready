@@ -1,0 +1,27 @@
+name: Autofix
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+
+jobs:
+  autofix:
+    name: Autofix with Claude Code
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'renovate/')
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            This is a Renovate dependency update PR.
+            Run /autofix to fix lint and format issues.
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
