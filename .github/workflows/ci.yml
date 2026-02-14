@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  check:
-    name: Check
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
 
   integration:
     name: Integration Test (Node.js v${{ matrix.node-version }})
-    needs: check
+    needs: test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -41,3 +41,18 @@ jobs:
           path: dist/
       - run: npm install -g .
       - run: bash tests/integration.sh --service mysql --service postgresql --service redis --service http --output dots
+
+  check:
+    name: Check
+    if: always()
+    needs: [test, integration]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [[ "${{ needs.test.result }}" == "success" && "${{ needs.integration.result }}" == "success" ]]; then
+            echo "All checks passed"
+            exit 0
+          else
+            echo "Some checks failed: test=${{ needs.test.result }}, integration=${{ needs.integration.result }}"
+            exit 1
+          fi
