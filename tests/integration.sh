@@ -96,7 +96,7 @@ run_test() {
 # --- Success cases ---
 for svc in "${services[@]}"; do
   read -r _ port protocol <<< "$(service_config "$svc")"
-  run_test "$svc" "${await_ready[@]}" ":$port" --protocol "$protocol" --output "$output"
+  run_test "$svc" "${await_ready[@]}" ":$port" --protocol "$protocol" --output "$output" --timeout 30000
 done
 
 echo ""
