@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Generate GitHub Apps token
         id: generate
@@ -49,3 +50,48 @@ jobs:
 
       - name: Publish to npm
         run: npm publish --access public --provenance
+
+  compile:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - target: bun-linux-x64
+            artifact: await-ready-linux-x64
+          - target: bun-linux-arm64
+            artifact: await-ready-linux-arm64
+          - target: bun-darwin-x64
+            artifact: await-ready-darwin-x64
+          - target: bun-darwin-arm64
+            artifact: await-ready-darwin-arm64
+          - target: bun-windows-x64
+            artifact: await-ready-windows-x64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+
+      - name: Compile
+        run: bun build --compile --target ${{ matrix.target }} src/main.ts --outfile ${{ matrix.artifact }}
+
+      - name: Compress
+        run: |
+          if [[ "${{ matrix.target }}" == *windows* ]]; then
+            zip ${{ matrix.artifact }}.zip ${{ matrix.artifact }}.exe
+          else
+            tar czf ${{ matrix.artifact }}.tar.gz ${{ matrix.artifact }}
+          fi
+
+      - name: Upload release asset
+        run: |
+          if [[ "${{ matrix.target }}" == *windows* ]]; then
+            gh release upload "${{ needs.release-please.outputs.tag_name }}" ${{ matrix.artifact }}.zip
+          else
+            gh release upload "${{ needs.release-please.outputs.tag_name }}" ${{ matrix.artifact }}.tar.gz
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}

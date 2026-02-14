@@ -55,7 +55,8 @@
     "test": "run-p {lint,format,knip,typecheck,unit}",
     "unit": "vitest run",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "compile": "bun build --compile src/main.ts --outfile dist/await-ready"
   },
   "devDependencies": {
     "@types/bun": "latest",
