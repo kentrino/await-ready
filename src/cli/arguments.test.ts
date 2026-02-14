@@ -15,7 +15,10 @@ function parseHelper(rawArgs: string) {
 describe("Args", () => {
   test("output type should match AwaitReadyParams", () => {
     expectTypeOf<ArgsOutput>().branded.toEqualTypeOf<
-      Omit<AwaitReadyParams, "onRetry" | "waitForDns"> & { ["wait-for-dns"]: boolean }
+      Omit<AwaitReadyParams, "onRetry" | "waitForDns"> & {
+        ["wait-for-dns"]: boolean;
+        output: "dots" | "spinner" | "sl" | "silent";
+      }
     >();
   });
 

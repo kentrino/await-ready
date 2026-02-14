@@ -8,7 +8,6 @@ export function formatZodError(error: ZodError): AwaitReadyArgumentError {
     type: "ArgumentError",
     issues: error.issues.map(formatZodIssue),
     message: error.message,
-    name: error.name,
     cause: error,
   };
 }

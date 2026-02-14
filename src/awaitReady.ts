@@ -1,4 +1,4 @@
-import type { AwaitReadyResult } from "./AwaitReadyResult";
+import type { AwaitReadyProbeError, AwaitReadyResult } from "./AwaitReadyResult";
 
 import { StatusCode } from "./ConnectionStatus";
 import { poll } from "./poll";
@@ -20,7 +20,7 @@ export async function awaitReady({
   interval = 500,
   timeout = 10_000,
   ...params
-}: AwaitReadyParams): Promise<AwaitReadyResult<{}>> {
+}: AwaitReadyParams): Promise<AwaitReadyResult<{}, AwaitReadyProbeError>> {
   const res = await poll({ ...params, waitForDns, interval, timeout });
   if (res.code === StatusCode.CONNECTED) {
     return { success: true, value: {} };

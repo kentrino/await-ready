@@ -40,6 +40,7 @@
     "test": "vitest run",
     "knip": "knip-bun",
     "check": "bun run lint && bun run fmt:check && bun run knip",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {

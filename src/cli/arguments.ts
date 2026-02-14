@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { type AwaitReadyResult } from "../AwaitReadyResult";
+import { type AwaitReadyArgumentError, type AwaitReadyResult } from "../AwaitReadyResult";
 import { OutputMode } from "../types/OutputMode";
 import { Protocol } from "../types/Protocol";
 import { formatZodError } from "./formatZodError";
@@ -9,7 +9,9 @@ import { safeParseArgs } from "./safeParseArgs";
 
 const ProtocolInput = z.enum(["pg", ...Protocol.options] as const);
 
-export function parseArgs(rawArgs: string[]): AwaitReadyResult<ArgsOutput> {
+export function parseArgs(
+  rawArgs: string[],
+): AwaitReadyResult<ArgsOutput, AwaitReadyArgumentError> {
   const parsed = safeParseArgs(rawArgs, args);
   if (!parsed.success) {
     return parsed;
