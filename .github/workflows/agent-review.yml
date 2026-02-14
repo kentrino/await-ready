@@ -1,0 +1,48 @@
+name: Agent Review
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches: [main]
+
+jobs:
+  review:
+    name: Review with Claude Code
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.head_ref, 'renovate/')"
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_tools: "mcp__github__create_pending_pull_request_review,mcp__github__add_comment_to_pending_review,mcp__github__submit_pending_pull_request_review,mcp__github__get_pull_request_diff"
+          timeout_minutes: 10
+          direct_prompt: |
+            Review this PR and provide inline feedback using the GitHub review system.
+
+            Steps:
+            1. Use `mcp__github__create_pending_pull_request_review` to begin a pending review
+            2. Use `mcp__github__get_pull_request_diff` to understand the changes and line numbers
+            3. Use `mcp__github__add_comment_to_pending_review` for each piece of feedback
+            4. Use `mcp__github__submit_pending_pull_request_review` with event type "COMMENT" to publish
+
+            Focus on:
+            - Correctness and potential bugs
+            - Security concerns
+            - Breaking changes
+            - Performance considerations
+            - Unnecessary state
+            - Inconsistent code
+            - Unnecessary complexity
+
+            Do not comment on style or formatting — those are handled by automated tools (oxlint, oxfmt).
+            Only leave comments where corrections are necessary. No compliments.
+            Submit as "COMMENT" type so the review does not block the PR.
