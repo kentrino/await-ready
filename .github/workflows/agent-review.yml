@@ -59,7 +59,7 @@ jobs:
           fi
 
           echo "Watching CI run $RUN_ID"
-          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status --interval 15
 
   review:
     name: Review with Claude Code
@@ -86,6 +86,6 @@ jobs:
           claude_args: >-
             --model claude-opus-4-6
             --max-turns 20
-            --allowedTools "Bash(gh *),Bash(./scripts/gh-pr-diff *),Write"
+            --allowedTools "Bash(gh *),Bash(*gh-pr-diff *),Write"
           prompt: |
             Run /review ${{ github.event.pull_request.number || github.event.issue.number }}
