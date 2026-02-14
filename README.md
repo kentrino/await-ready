@@ -1,6 +1,8 @@
 # await-ready
 
-A small CLI to wait for a service to be _actually_ ready, not just listening. Supports HTTP, PostgreSQL, MySQL, and Redis handshakes out of the box.
+A small, **zero-dependency** CLI to wait for a service to be _actually_ ready, not just listening. Supports HTTP, PostgreSQL, MySQL, and Redis handshakes out of the box.
+
+Typical use: pair `docker compose up -d` with `await-ready` in your `package.json` scripts so that `db:ready` blocks until the database is actually accepting connections.
 
 ## Install
 
@@ -102,6 +104,19 @@ replacement in existing scripts.
 | `silent`  | No output at all                                                    |
 
 ## Examples
+
+### package.json scripts -- start and wait for a database
+
+```jsonc
+{
+  "scripts": {
+    "db:start": "docker compose up -d mysql",
+    "db:ready": "await-ready mysql://localhost:3306 --timeout 30000",
+    "db:setup": "npm run db:start && npm run db:ready && npm run db:migrate",
+    "db:migrate": "prisma migrate deploy",
+  },
+}
+```
 
 ### Docker Compose -- wait for Postgres before running migrations
 
