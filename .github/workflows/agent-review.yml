@@ -31,4 +31,4 @@ jobs:
             --max-turns 20
             --allowedTools "Bash(gh *),Bash(./scripts/gh-pr-diff *)"
           prompt: |
-            Run /review to review this PR.
+            Run /review ${{ github.event.pull_request.number }}

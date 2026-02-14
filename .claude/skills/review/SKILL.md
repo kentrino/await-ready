@@ -1,21 +1,17 @@
 ---
 name: review
 description: Review a PR and submit inline feedback via GitHub API. Use when reviewing pull requests.
+argument-hint: "<pr-number>"
 ---
 
-Review the current PR and submit inline feedback using the GitHub review API.
+Review PR #$ARGUMENTS and submit inline feedback using the GitHub review API.
 DO NOT repeat feedback that was already left in prior runs.
 
 ## Steps
 
-### 0. Identify the PR number
-
-Determine the current PR number from the environment variable `$PR_NUMBER`,
-or from `gh pr view --json number -q .number`.
-
 ### 1. Get the diff
 
-Run `./scripts/gh-pr-diff <PR_NUMBER>` to get the filtered diff
+Run `./scripts/gh-pr-diff $ARGUMENTS` to get the filtered diff
 (lockfiles and generated files are already excluded by the script).
 
 ### 2. Load existing review comments (dedupe baseline)
@@ -23,7 +19,7 @@ Run `./scripts/gh-pr-diff <PR_NUMBER>` to get the filtered diff
 Run:
 
 ```bash
-gh api repos/{owner}/{repo}/pulls/{pr}/comments --paginate
+gh api repos/{owner}/{repo}/pulls/$ARGUMENTS/comments --paginate
 ```
 
 - Treat any comment containing `<!-- agent-review:finding:` as already reviewed.
@@ -58,7 +54,7 @@ If the `FINDING_ID` is in `alreadyReviewedFindingIds`, SKIP.
 Submit a single review with all inline comments using the GitHub API:
 
 ```bash
-gh api repos/{owner}/{repo}/pulls/{pr}/reviews \
+gh api repos/{owner}/{repo}/pulls/$ARGUMENTS/reviews \
   --method POST \
   -f event=COMMENT \
   -f body="<summary>" \
