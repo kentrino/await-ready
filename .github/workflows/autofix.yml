@@ -14,6 +14,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,7 +22,8 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             This is a Renovate dependency update PR.
             Run /autofix to fix lint and format issues.
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
