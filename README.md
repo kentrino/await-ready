@@ -181,11 +181,13 @@ if (result.success) {
 }
 ```
 
-You can also parse CLI-style argument arrays with `parseArgs` and feed the
-result directly into `awaitReady`:
+You can also parse CLI-style argument arrays with `parseArgs` (available as a
+separate entry point at `await-ready/parseArgs`) and feed the result directly
+into `awaitReady`:
 
 ```ts
-import { parseArgs, awaitReady } from "await-ready";
+import { awaitReady } from "await-ready";
+import { parseArgs } from "await-ready/parseArgs";
 
 const parsed = parseArgs(process.argv.slice(2));
 if (!parsed.success) {

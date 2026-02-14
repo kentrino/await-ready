@@ -20,8 +20,8 @@ vi.mock("node:net", localhostMissingIPv4Record);
 
 describe("default host edge case", () => {
   test("succeeds when --host is omitted (default localhost) and localhost has no IPv4 record", async () => {
-    const { parseArgs } = await import("./cli/arguments");
-    const { awaitReady } = await import("./awaitReady");
+    const { parseArgs } = await import("./parseArgs");
+    const { awaitReady } = await import("./");
 
     const parsed = parseArgs(["-p", "55432", "--protocol", "pg"]);
     expect(parsed.success).toBe(true);
@@ -34,8 +34,8 @@ describe("default host edge case", () => {
   });
 
   test("succeeds when --host 0.0.0.0 is provided (bypasses name resolution)", async () => {
-    const { parseArgs } = await import("./cli/arguments");
-    const { awaitReady } = await import("./awaitReady");
+    const { parseArgs } = await import("./parseArgs");
+    const { awaitReady } = await import("./");
 
     const parsed = parseArgs(["-p", "55432", "--protocol", "pg", "--host", "0.0.0.0"]);
     expect(parsed.success).toBe(true);

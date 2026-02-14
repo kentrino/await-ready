@@ -19,4 +19,11 @@ export default defineConfig([
     format: "esm",
     dts: true,
   },
+  {
+    entry: ["src/parseArgs.ts"],
+    format: "esm",
+    dts: true,
+    // citty and zod are devDependencies bundled intentionally
+    inlineOnly: false,
+  },
 ]);
