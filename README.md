@@ -1,8 +1,10 @@
 # await-ready
 
+**Protocol-aware readiness check for npm scripts and Docker Compose**
+
 A small, **zero-dependency** CLI to wait for a service to be _actually_ ready, not just listening. Supports HTTP, PostgreSQL, MySQL, and Redis handshakes out of the box.
 
-Typical use: pair `docker compose up -d` with `await-ready` in your `package.json` scripts so that `db:ready` blocks until the database is actually accepting connections.
+Typical use: pair `docker compose up -d` with `await-ready` in your `package.json` scripts (e.g. `db:ready`) so it blocks until the service is actually accepting connections.
 
 ## Install
 

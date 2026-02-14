@@ -1,7 +1,20 @@
 {
   "name": "await-ready",
   "version": "0.1.1",
-  "description": "Check if a service is ready",
+  "description": "Protocol-aware readiness check for npm scripts and Docker Compose",
+  "keywords": [
+    "Wait4X",
+    "docker",
+    "health-check",
+    "http",
+    "mysql",
+    "postgresql",
+    "ready",
+    "redis",
+    "util",
+    "wait",
+    "wait-port"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
