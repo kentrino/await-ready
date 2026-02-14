@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/kentrino/await-ready/compare/v0.2.0...v0.2.1) (2026-02-14)
+
+
+### CI/CD
+
+* **review:** increase poll interval and fix script permission pattern ([e605135](https://github.com/kentrino/await-ready/commit/e60513569ae5829e2575972dc9eb7ca6d6efc7e7))
+* **workflow:** remove check step from release workflow ([72fa90b](https://github.com/kentrino/await-ready/commit/72fa90b154ee9a4d5e19bcfdf59022edc0cce3b8))
+* **workflow:** remove check step from release workflow ([85412b7](https://github.com/kentrino/await-ready/commit/85412b7c02efacb8d79929174ccaf79887c7b6da))
+
 ## [0.2.0](https://github.com/kentrino/await-ready/compare/v0.1.1...v0.2.0) (2026-02-14)
 
 
