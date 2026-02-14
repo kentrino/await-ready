@@ -2,15 +2,57 @@ name: Agent Review
 
 on:
   pull_request:
-    types: [review_requested]
+    types: [review_requested, opened, reopened]
     branches: [main]
+  issue_comment:
+    types: [created]
 
 jobs:
+  gate:
+    name: Wait for CI
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '/review'))
+    permissions:
+      checks: read
+      pull-requests: read
+      actions: read
+    steps:
+      - name: Wait for CI workflow to pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json headRefOid --jq '.headRefOid')
+
+          # Wait for CI run to appear (up to 5 min)
+          for i in $(seq 1 30); do
+            RUN_ID=$(gh run list --workflow=ci.yml --commit "$HEAD_SHA" --repo "$REPO" --json databaseId --jq '.[0].databaseId')
+            if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
+              break
+            fi
+            echo "Waiting for CI run to start… ($i)"
+            sleep 10
+          done
+
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+            echo "::error::CI run not found after 5 minutes"
+            exit 1
+          fi
+
+          echo "Watching CI run $RUN_ID"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
+
   review:
     name: Review with Claude Code
+    needs: gate
     runs-on: ubuntu-latest
-    if: "!startsWith(github.head_ref, 'renovate/')"
-    continue-on-error: true
+    if: |
+      !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/'))
     permissions:
       contents: read
       pull-requests: write
@@ -19,6 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
           fetch-depth: 1
 
       - name: Review
@@ -31,4 +74,4 @@ jobs:
             --max-turns 20
             --allowedTools "Bash(gh *),Bash(./scripts/gh-pr-diff *),Write"
           prompt: |
-            Run /review ${{ github.event.pull_request.number }}
+            Run /review ${{ github.event.pull_request.number || github.event.issue.number }}
