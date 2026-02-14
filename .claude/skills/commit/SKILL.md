@@ -7,9 +7,10 @@ Run tests, then commit the session's changes with a conventional commit message.
 
 ## Steps
 
-### 1. Run tests
+### 1. Run autofix and tests
 
 ```bash
+bun run autofix
 bun run test
 ```
 
