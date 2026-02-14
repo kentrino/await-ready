@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+for cmd in gh jq; do
+  command -v "$cmd" &>/dev/null || { echo "$cmd is required but not installed." >&2; exit 1; }
+done
+
+OWNER=kentrino
+REPO=await-ready
+IGNORE_PATTERNS=(
+  "^bun\.lock$"
+  "^dist/"
+)
+
+PR="${1:-}"
+if [[ -z "$PR" ]]; then
+  echo "Usage: $0 <pr-number>" >&2
+  exit 1
+fi
+
+ignore_re="$(IFS='|'; echo "${IGNORE_PATTERNS[*]}")"
+
+files="$(
+  gh api repos/${OWNER}/${REPO}/pulls/${PR}/files --paginate \
+    | jq -r '.[].filename' \
+    | grep -Ev "$ignore_re"
+)"
+
+gh api -H "Accept: application/vnd.github.v3.diff" \
+  repos/$OWNER/$REPO/pulls/$PR \
+| awk '
+  BEGIN{ printing=1 }
+  NR==FNR { if($0!="") ok[$0]=1; next }
+  /^diff --git a\//{
+    file=$0; sub(/^diff --git a\//,"",file); sub(/ b\/.*/,"",file);
+    printing = (file in ok);
+  }
+  printing{print}
+' <(printf '%s\n' "$files") -

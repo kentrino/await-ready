@@ -1,16 +1,22 @@
-import type { ZodError } from "zod";
-import type { $ZodIssue } from "zod/v4/core";
-
-export type AwaitReadyResult<T> = AwaitReadySuccess<T> | AwaitReadyFailure;
+export type AwaitReadyResult<
+  T,
+  E extends AwaitReadyArgumentError | AwaitReadyProbeError =
+    | AwaitReadyProbeError
+    | AwaitReadyArgumentError,
+> = AwaitReadySuccess<T> | AwaitReadyFailure<E>;
 
 export interface AwaitReadySuccess<T> {
   success: true;
   value: T;
 }
 
-export interface AwaitReadyFailure {
+export interface AwaitReadyFailure<
+  E extends AwaitReadyArgumentError | AwaitReadyProbeError =
+    | AwaitReadyProbeError
+    | AwaitReadyArgumentError,
+> {
   success: false;
-  error: AwaitReadyArgumentError | AwaitReadyProbeError;
+  error: E;
 }
 
 type __assertion_AwaitReadyFailure = Satisfies<
@@ -35,10 +41,9 @@ export type AwaitReadyProbeError = {
 };
 
 export interface AwaitReadyArgumentError {
-  type: "ArgumentError";
-  issues: AwaitReadyArgumentErrorIssue[];
+  type: "ArgumentError" | "UnknownError";
+  issues?: AwaitReadyArgumentErrorIssue[];
   message: string;
-  name: string;
   cause?: Error;
 }
 
@@ -72,23 +77,4 @@ export interface AwaitReadyArgumentErrorIssue {
   path: (string | number | symbol)[];
   code: string;
   expected?: AwaitReadyArgumentErrorIssueExpected;
-}
-
-export function formatZodError(error: ZodError): AwaitReadyArgumentError {
-  return {
-    type: "ArgumentError",
-    issues: error.issues.map(formatZodIssue),
-    message: error.message,
-    name: error.name,
-    cause: error,
-  };
-}
-
-function formatZodIssue(issue: $ZodIssue): AwaitReadyArgumentErrorIssue {
-  return {
-    message: issue.message,
-    path: issue.path,
-    code: issue.code,
-    expected: "expected" in issue ? issue.expected : undefined,
-  };
 }

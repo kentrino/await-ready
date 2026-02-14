@@ -1,6 +1,10 @@
 # await-ready
 
-A small CLI to wait for a service to be _actually_ ready, not just listening. Supports HTTP, PostgreSQL, MySQL, and Redis handshakes out of the box.
+**Protocol-aware readiness check for npm scripts and Docker Compose**
+
+A small, **zero-dependency** CLI to wait for a service to be _actually_ ready, not just listening. Supports HTTP, PostgreSQL, MySQL, and Redis handshakes out of the box.
+
+Typical use: pair `docker compose up -d` with `await-ready` in your `package.json` scripts (e.g. `db:ready`) so it blocks until the service is actually accepting connections.
 
 ## Install
 
@@ -103,6 +107,19 @@ replacement in existing scripts.
 
 ## Examples
 
+### package.json scripts -- start and wait for a database
+
+```jsonc
+{
+  "scripts": {
+    "db:start": "docker compose up -d mysql",
+    "db:ready": "await-ready mysql://localhost:3306 --timeout 30000",
+    "db:setup": "npm run db:start && npm run db:ready && npm run db:migrate",
+    "db:migrate": "prisma migrate deploy",
+  },
+}
+```
+
 ### Docker Compose -- wait for Postgres before running migrations
 
 ```yaml
@@ -181,11 +198,13 @@ if (result.success) {
 }
 ```
 
-You can also parse CLI-style argument arrays with `parseArgs` and feed the
-result directly into `awaitReady`:
+You can also parse CLI-style argument arrays with `parseArgs` (available as a
+separate entry point at `await-ready/parseArgs`) and feed the result directly
+into `awaitReady`:
 
 ```ts
-import { parseArgs, awaitReady } from "await-ready";
+import { awaitReady } from "await-ready";
+import { parseArgs } from "await-ready/parseArgs";
 
 const parsed = parseArgs(process.argv.slice(2));
 if (!parsed.success) {

@@ -8,6 +8,8 @@ export default defineConfig([
     format: "esm",
     clean: true,
     banner: { js: "#!/usr/bin/env node" },
+    // citty and zod are devDependencies bundled intentionally for the CLI binary
+    inlineOnly: false,
     define: {
       __VERSION__: JSON.stringify(pkg.version),
     },
@@ -16,5 +18,12 @@ export default defineConfig([
     entry: ["src/index.ts"],
     format: "esm",
     dts: true,
+  },
+  {
+    entry: ["src/parseArgs.ts"],
+    format: "esm",
+    dts: true,
+    // citty and zod are devDependencies bundled intentionally
+    inlineOnly: false,
   },
 ]);

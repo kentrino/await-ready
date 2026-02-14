@@ -1,14 +1,17 @@
 import * as z from "zod";
 
-import { formatZodError, type AwaitReadyResult } from "../AwaitReadyResult";
+import { type AwaitReadyArgumentError, type AwaitReadyResult } from "../AwaitReadyResult";
 import { OutputMode } from "../types/OutputMode";
 import { Protocol } from "../types/Protocol";
+import { formatZodError } from "./formatZodError";
 import { parseTarget } from "./parseTarget";
 import { safeParseArgs } from "./safeParseArgs";
 
 const ProtocolInput = z.enum(["pg", ...Protocol.options] as const);
 
-export function parseArgs(rawArgs: string[]): AwaitReadyResult<ArgsOutput> {
+export function parseArgs(
+  rawArgs: string[],
+): AwaitReadyResult<ArgsOutput, AwaitReadyArgumentError> {
   const parsed = safeParseArgs(rawArgs, args);
   if (!parsed.success) {
     return parsed;
@@ -113,7 +116,7 @@ const validated = z.object({
   interval: z.number().min(10),
   path: z.union([z.string(), z.undefined()]),
   output: OutputMode,
-  ["wait-for-dns"]: z.boolean(),
+  waitForDns: z.boolean(),
 });
 
 export type ArgsOutput = {
@@ -124,7 +127,7 @@ export type ArgsOutput = {
   interval: number;
   path: string | undefined;
   output: "dots" | "spinner" | "sl" | "silent";
-  "wait-for-dns": boolean;
+  waitForDns: boolean;
 };
 
 export const Args = input
@@ -148,7 +151,7 @@ export const Args = input
         timeout: v.timeout,
         interval: v.interval,
         output,
-        "wait-for-dns": v["wait-for-dns"],
+        waitForDns: v["wait-for-dns"],
       };
     }
     if (!v.port) {
@@ -167,7 +170,7 @@ export const Args = input
       timeout: v.timeout,
       interval: v.interval,
       output,
-      "wait-for-dns": v["wait-for-dns"],
+      waitForDns: v["wait-for-dns"],
     };
   })
   .pipe(validated);

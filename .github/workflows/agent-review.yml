@@ -1,0 +1,91 @@
+name: Agent Review
+
+on:
+  pull_request:
+    types: [review_requested, opened, reopened]
+    branches: [main]
+  issue_comment:
+    types: [created]
+
+jobs:
+  gate:
+    name: Wait for CI
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '/review'))
+    permissions:
+      contents: read
+      checks: read
+      pull-requests: read
+      actions: read
+    steps:
+      - name: Verify commenter is a CODEOWNER
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+          REPO: ${{ github.repository }}
+        run: |
+          owners=$(gh api "repos/$REPO/contents/.github/CODEOWNERS" --jq '.content' | base64 -d | grep -o '@[^ ]*' | sed 's/@//')
+          if ! echo "$owners" | grep -qx "$COMMENTER"; then
+            echo "::error::$COMMENTER is not a CODEOWNER"
+            exit 1
+          fi
+
+      - name: Wait for CI to pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json headRefOid --jq '.headRefOid')
+
+          # Wait for CI run to appear (up to 5 min)
+          for i in $(seq 1 30); do
+            RUN_ID=$(gh run list --workflow=ci.yml --commit "$HEAD_SHA" --repo "$REPO" --json databaseId --jq '.[0].databaseId')
+            if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
+              break
+            fi
+            echo "Waiting for CI run to start… ($i)"
+            sleep 10
+          done
+
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+            echo "::error::CI run not found after 5 minutes"
+            exit 1
+          fi
+
+          echo "Watching CI run $RUN_ID"
+          gh run watch "$RUN_ID" --repo "$REPO" --exit-status
+
+  review:
+    name: Review with Claude Code
+    needs: gate
+    runs-on: ubuntu-latest
+    if: |
+      !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/'))
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
+          fetch-depth: 1
+
+      - name: Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: >-
+            --model claude-opus-4-6
+            --max-turns 20
+            --allowedTools "Bash(gh *),Bash(./scripts/gh-pr-diff *),Write"
+          prompt: |
+            Run /review ${{ github.event.pull_request.number || github.event.issue.number }}

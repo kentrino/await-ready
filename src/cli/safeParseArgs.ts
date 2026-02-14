@@ -1,11 +1,11 @@
 import { parseArgs as cittyParseArgs, type ArgsDef, type ParsedArgs } from "citty";
 
-import type { AwaitReadyResult } from "../AwaitReadyResult";
+import type { AwaitReadyArgumentError, AwaitReadyResult } from "../AwaitReadyResult";
 
 export function safeParseArgs<A extends ArgsDef>(
   rawArgs: string[],
   args: A,
-): AwaitReadyResult<ParsedArgs<ArgsDef>> {
+): AwaitReadyResult<ParsedArgs<ArgsDef>, AwaitReadyArgumentError> {
   try {
     const parsed = cittyParseArgs(rawArgs, args);
     return {
