@@ -18,7 +18,7 @@ If any check fails, fix the issues and re-run. Do NOT proceed to commit until al
 
 ### 2. Check for changes
 
-Run `git add --intent-to-add .` and `git diff -- . ':!bun.lock'` (staged + unstaged).
+Run `git add --intent-to-add .` then `git diff HEAD -- . ':!bun.lock'`.
 If there are no changes, inform the user and stop.
 
 ### 3. Commit
