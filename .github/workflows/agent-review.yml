@@ -29,6 +29,6 @@ jobs:
           claude_args: >-
             --model claude-opus-4-6
             --max-turns 20
-            --allowedTools "Bash(gh *),Bash(./scripts/gh-pr-diff *)"
+            --allowedTools "Bash(gh *),Bash(./scripts/gh-pr-diff *),Write(/tmp/*)"
           prompt: |
             Run /review ${{ github.event.pull_request.number }}

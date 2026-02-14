@@ -51,14 +51,26 @@ For each NEW finding, generate a stable finding ID:
 
 If the `FINDING_ID` is in `alreadyReviewedFindingIds`, SKIP.
 
-Submit a single review with all inline comments using the GitHub API:
+Write the review payload to `/tmp/review.json` using the Write tool, then submit it:
+
+```json
+{
+  "event": "COMMENT",
+  "body": "<summary>",
+  "comments": [
+    {
+      "path": "<file>",
+      "line": <line>,
+      "body": "<!-- agent-review:finding:FINDING_ID -->\n<comment>"
+    }
+  ]
+}
+```
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/$ARGUMENTS/reviews \
   --method POST \
-  -f event=COMMENT \
-  -f body="<summary>" \
-  --jsonc comments='[{"path":"<file>","line":<line>,"body":"<!-- agent-review:finding:FINDING_ID -->\n<comment>"}]'
+  --input /tmp/review.json
 ```
 
 Submit as `COMMENT` (not `REQUEST_CHANGES`) so the review does not block the PR.
