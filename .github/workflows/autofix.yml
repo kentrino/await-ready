@@ -9,6 +9,7 @@ jobs:
   autofix:
     name: Autofix with Claude Code
     runs-on: ubuntu-latest
+    # Only triggers when CI fails on a Renovate PR
     if: >
       github.event.workflow_run.conclusion == 'failure' &&
       startsWith(github.event.workflow_run.head_branch, 'renovate/')
@@ -18,14 +19,25 @@ jobs:
       issues: write
       id-token: write
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.AWAIT_READY_BOT_APP_ID }}
+          private-key: ${{ secrets.AWAIT_READY_BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      - run: |
+          git config user.name "await-ready-bot[bot]"
+          git config user.email "2865994+await-ready-bot[bot]@users.noreply.github.com"
 
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
           claude_args: >-
             --model claude-opus-4-6
             --max-turns 30
@@ -38,3 +50,4 @@ jobs:
       - uses: ad-m/github-push-action@v0.8.0
         with:
           branch: ${{ github.event.workflow_run.head_branch }}
+          github_token: ${{ steps.app-token.outputs.token }}

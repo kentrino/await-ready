@@ -11,6 +11,8 @@ jobs:
   gate:
     name: Wait for CI
     runs-on: ubuntu-latest
+    # Triggers on pull requests except release-please and renovate branches,
+    # or when a /review comment is posted
     if: |
       (
         (github.event_name == 'pull_request') ||
@@ -18,7 +20,10 @@ jobs:
          github.event.issue.pull_request &&
          contains(github.event.comment.body, '/review'))
       ) &&
-      !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release-please--'))
+      !(github.event_name == 'pull_request' && (
+        startsWith(github.head_ref, 'release-please--') ||
+        startsWith(github.head_ref, 'renovate/')
+      ))
     permissions:
       contents: read
       checks: read
@@ -79,16 +84,23 @@ jobs:
       issues: write
       id-token: write
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.AWAIT_READY_BOT_APP_ID }}
+          private-key: ${{ secrets.AWAIT_READY_BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
           fetch-depth: 1
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Review
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
           claude_args: >-
             --model claude-opus-4-6
             --max-turns 20
