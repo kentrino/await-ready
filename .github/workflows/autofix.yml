@@ -47,7 +47,7 @@ jobs:
             This is a Renovate dependency update PR where CI has failed.
             Run /autofix to diagnose and fix the issues.
 
-      - uses: ad-m/github-push-action@v0.8.0
+      - uses: ad-m/github-push-action@77c5b412c50b723d2a4fbc6d71fb5723bcd439aa
         with:
           branch: ${{ github.event.workflow_run.head_branch }}
           github_token: ${{ steps.app-token.outputs.token }}
