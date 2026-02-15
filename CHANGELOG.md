@@ -1,5 +1,53 @@
 # Changelog
 
+## [0.2.3](https://github.com/kentrino/await-ready/compare/v0.2.2...v0.2.3) (2026-02-15)
+
+
+### Bug Fixes
+
+* **integration:** add explicit 30s timeout to integration tests ([d603163](https://github.com/kentrino/await-ready/commit/d603163261346afa42d742458823ebbe9cee5780))
+* **skill:** use git diff HEAD to capture both staged and unstaged changes ([4a717fc](https://github.com/kentrino/await-ready/commit/4a717fc46e990dd0564bf1a611df80529278c3c9))
+
+
+### Refactoring
+
+* simplify AwaitReadyArgumentErrorIssueExpected to string ([661bdf4](https://github.com/kentrino/await-ready/commit/661bdf47c3a7a962e1716b479b8af7dcbeafa6d0))
+
+
+### Documentation
+
+* **skills:** update pr skill to also update existing open PRs ([b742733](https://github.com/kentrino/await-ready/commit/b7427330d0e5319a8b7361d4206f5a04aa920f2e))
+
+
+### CI/CD
+
+* add check gate job requiring both test and integration to pass ([81eec0e](https://github.com/kentrino/await-ready/commit/81eec0e7f0cd32356a3d2210bf439cc0c5850629))
+* add pinact workflow to auto-pin actions on PRs ([5225758](https://github.com/kentrino/await-ready/commit/522575855351e7be75a6453b6aa84b70a6ac509c))
+* **agent-review:** add check run to track review progress ([6078fa2](https://github.com/kentrino/await-ready/commit/6078fa21f6b3df283f8acd8a94dff1f9f2d8f04f))
+* **agent-review:** add eyes reaction on /review comment ([01614ae](https://github.com/kentrino/await-ready/commit/01614ae4a89a2bcaaa9886c32617e982e3564390))
+* **autofix:** allow renovate[bot] in claude-code-action ([a63b51d](https://github.com/kentrino/await-ready/commit/a63b51d60e5af6d9f7433030d6aa79c55882d1db))
+* **autofix:** checkout by SHA and add setup-bun step ([0dfe6ce](https://github.com/kentrino/await-ready/commit/0dfe6cef3d3701bfc56318cec6506d0aca857425))
+* **autofix:** pin github-push-action to full commit SHA ([7e2f0b1](https://github.com/kentrino/await-ready/commit/7e2f0b120e81470e71e0a63ee0409568a9d28c6f))
+* **autofix:** rewrite workflow to trigger on CI failure and enhance skill ([6f97112](https://github.com/kentrino/await-ready/commit/6f9711200ba6b948136e14e3813d39ea551f2aab))
+* pin GitHub Actions and add pinact workflow ([77a9f6f](https://github.com/kentrino/await-ready/commit/77a9f6f7ca5dccbd93bad2c75a31078d029aa722))
+* pin GitHub Actions to commit SHAs ([9b2e194](https://github.com/kentrino/await-ready/commit/9b2e194859ffede4a08c3aa19c9b53285af67bfe))
+* **release:** add cross-compiled binary distribution ([c8a264e](https://github.com/kentrino/await-ready/commit/c8a264ea9d829ae7898f2f468cc0b95104919032))
+* **release:** add test step before compiling binaries ([c32bc3d](https://github.com/kentrino/await-ready/commit/c32bc3d08ed2d44652748fbba341752139d490a4))
+* **renovate:** disable updates for github actions and docker images ([7dbd28e](https://github.com/kentrino/await-ready/commit/7dbd28e56230b9b6dbe342d0a4f690052eae601a))
+* **review:** skip agent review for release-please PRs ([d2c7059](https://github.com/kentrino/await-ready/commit/d2c70599ba2cf477dbdfbc2b00ecfa203b1c5b3a))
+* use await-ready-bot app token across all workflows ([232f5a4](https://github.com/kentrino/await-ready/commit/232f5a411c3ffa3d0a20865d0fad71e1c7ab61f4))
+* use vars instead of secrets for app ID ([3a8b3fc](https://github.com/kentrino/await-ready/commit/3a8b3fc9e240fa753519eafe4abbf1573744999e))
+
+
+### Miscellaneous
+
+* add /commit skill for test-then-commit workflow ([18c0b21](https://github.com/kentrino/await-ready/commit/18c0b21b1f5a0438b7f65a7fc1c355b674963a80))
+* add /pr skill for pull request creation workflow ([712b3e2](https://github.com/kentrino/await-ready/commit/712b3e2e6068a1d78b6a7e384cfd8def3ae6e930))
+* add autofix step to /commit skill and package script ([de36fb0](https://github.com/kentrino/await-ready/commit/de36fb0054273a1b4e8c7a01d4ccee0139cebd94))
+* ci ([e4d6eb3](https://github.com/kentrino/await-ready/commit/e4d6eb324ea1a6f0af1e7ab540e402d8fc8559ee))
+* CI improvements and skill updates ([d0a04a2](https://github.com/kentrino/await-ready/commit/d0a04a2d7c2585f7ef6eba6461d9978a7e408920))
+* **renovate:** disable dependency dashboard approval ([9824163](https://github.com/kentrino/await-ready/commit/9824163ffc9194a74088b7ca6d1f655dd6bd7f84))
+
 ## [0.2.2](https://github.com/kentrino/await-ready/compare/v0.2.1...v0.2.2) (2026-02-14)
 
 
