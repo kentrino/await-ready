@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/kentrino/await-ready/compare/v0.2.1...v0.2.2) (2026-02-14)
+
+
+### Miscellaneous
+
+* **deps:** update dependency oxfmt to ^0.32.0 ([#21](https://github.com/kentrino/await-ready/issues/21)) ([1bcf49e](https://github.com/kentrino/await-ready/commit/1bcf49e8f5fc1579d1ca76a64a0542743492e9c0))
+
 ## [0.2.1](https://github.com/kentrino/await-ready/compare/v0.2.0...v0.2.1) (2026-02-14)
 
 
