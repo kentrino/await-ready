@@ -19,25 +19,25 @@ jobs:
       issues: write
       id-token: write
     steps:
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         id: app-token
         with:
           app-id: ${{ secrets.AWAIT_READY_BOT_APP_ID }}
           private-key: ${{ secrets.AWAIT_READY_BOT_PRIVATE_KEY }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3 # v2.1.2
 
       - run: |
           git config user.name "await-ready-bot[bot]"
           git config user.email "2865994+await-ready-bot[bot]@users.noreply.github.com"
 
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@ea36d6abdedc17fc2a671b36060770b208a6f8f1 # v1.0.51
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.app-token.outputs.token }}
