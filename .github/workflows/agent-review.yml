@@ -85,6 +85,14 @@ jobs:
       id-token: write
       checks: write
     steps:
+      - name: Add reaction
+        if: github.event_name == 'issue_comment'
+        # v2.1.0 = 608e41b19bc973020ec0e189ebfdae935d7fe0cc
+        uses: GrantBirki/comment@608e41b19bc973020ec0e189ebfdae935d7fe0cc
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: eyes
+
       - name: Create check run
         uses: actions/github-script@v7
         id: create-check
