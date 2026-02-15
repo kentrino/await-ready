@@ -1,6 +1,6 @@
 {
   "name": "await-ready",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Protocol-aware readiness check for npm scripts and Docker Compose",
   "keywords": [
     "Wait4X",
