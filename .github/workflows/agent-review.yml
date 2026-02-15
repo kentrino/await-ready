@@ -94,7 +94,7 @@ jobs:
           reactions: eyes
 
       - name: Create check run
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         id: create-check
         with:
           script: |
@@ -120,20 +120,20 @@ jobs:
             core.setOutput('check-run-id', check.id);
             core.setOutput('head-sha', headSha);
 
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         id: app-token
         with:
-          app-id: ${{ secrets.AWAIT_READY_BOT_APP_ID }}
+          app-id: ${{ vars.AWAIT_READY_BOT_APP_ID }}
           private-key: ${{ secrets.AWAIT_READY_BOT_PRIVATE_KEY }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
           fetch-depth: 1
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Review
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@ea36d6abdedc17fc2a671b36060770b208a6f8f1 # v1.0.51
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ steps.app-token.outputs.token }}
@@ -146,7 +146,7 @@ jobs:
 
       - name: Mark check completed
         if: always() && steps.create-check.outputs.check-run-id
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             const conclusion = '${{ job.status }}' === 'success' ? 'success' : 'failure';
