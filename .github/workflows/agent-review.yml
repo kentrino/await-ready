@@ -11,11 +11,19 @@ jobs:
   gate:
     name: Wait for CI
     runs-on: ubuntu-latest
+    # Triggers on pull requests except release-please and renovate branches,
+    # or when a /review comment is posted
     if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
-       contains(github.event.comment.body, '/review'))
+      (
+        (github.event_name == 'pull_request') ||
+        (github.event_name == 'issue_comment' &&
+         github.event.issue.pull_request &&
+         contains(github.event.comment.body, '/review'))
+      ) &&
+      !(github.event_name == 'pull_request' && (
+        startsWith(github.head_ref, 'release-please--') ||
+        startsWith(github.head_ref, 'renovate/')
+      ))
     permissions:
       contents: read
       checks: read
@@ -66,26 +74,87 @@ jobs:
     needs: gate
     runs-on: ubuntu-latest
     if: |
-      !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/'))
+      !(github.event_name == 'pull_request' && (
+        startsWith(github.head_ref, 'renovate/') ||
+        startsWith(github.head_ref, 'release-please--')
+      ))
     permissions:
       contents: read
       pull-requests: write
       issues: write
       id-token: write
+      checks: write
     steps:
+      - name: Add reaction
+        if: github.event_name == 'issue_comment'
+        # v2.1.0 = 608e41b19bc973020ec0e189ebfdae935d7fe0cc
+        uses: GrantBirki/comment@608e41b19bc973020ec0e189ebfdae935d7fe0cc
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          reactions: eyes
+
+      - name: Create check run
+        uses: actions/github-script@v7
+        id: create-check
+        with:
+          script: |
+            let headSha;
+            if (context.payload.pull_request) {
+              headSha = context.payload.pull_request.head.sha;
+            } else {
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.issue.number,
+              });
+              headSha = pr.head.sha;
+            }
+            const { data: check } = await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Agent Review',
+              head_sha: headSha,
+              status: 'in_progress',
+              started_at: new Date().toISOString(),
+            });
+            core.setOutput('check-run-id', check.id);
+            core.setOutput('head-sha', headSha);
+
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.AWAIT_READY_BOT_APP_ID }}
+          private-key: ${{ secrets.AWAIT_READY_BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
           fetch-depth: 1
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Review
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
           claude_args: >-
             --model claude-opus-4-6
             --max-turns 20
             --allowedTools "Bash(gh *),Bash(*gh-pr-diff *),Write"
           prompt: |
             Run /review ${{ github.event.pull_request.number || github.event.issue.number }}
+
+      - name: Mark check completed
+        if: always() && steps.create-check.outputs.check-run-id
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const conclusion = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+            await github.rest.checks.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: ${{ steps.create-check.outputs.check-run-id }},
+              status: 'completed',
+              conclusion,
+              completed_at: new Date().toISOString(),
+            });

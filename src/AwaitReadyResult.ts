@@ -47,34 +47,9 @@ export interface AwaitReadyArgumentError {
   cause?: Error;
 }
 
-// ported from $ZodInvalidTypeExpected
-type AwaitReadyArgumentErrorIssueExpected =
-  | "string"
-  | "number"
-  | "int"
-  | "boolean"
-  | "bigint"
-  | "symbol"
-  | "undefined"
-  | "null"
-  | "never"
-  | "void"
-  | "date"
-  | "array"
-  | "object"
-  | "tuple"
-  | "record"
-  | "map"
-  | "set"
-  | "file"
-  | "nonoptional"
-  | "nan"
-  | "function"
-  | (string & {});
-
 export interface AwaitReadyArgumentErrorIssue {
   message: string;
   path: (string | number | symbol)[];
   code: string;
-  expected?: AwaitReadyArgumentErrorIssueExpected;
+  expected?: string;
 }
