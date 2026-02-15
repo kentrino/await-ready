@@ -75,6 +75,9 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
 
+      - name: Test
+        run: bun run test
+
       - name: Compile
         run: bun build --compile --target ${{ matrix.target }} src/main.ts --outfile ${{ matrix.artifact }}
 
